@@ -6,6 +6,9 @@ project(DuelArena)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Generates compile_commands.json in out/ 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Find SDL2 (Only for the client)
 find_package(SDL2 REQUIRED)
 
@@ -31,12 +34,18 @@ target_link_libraries(ServerLib CommonLib)
 
 # Client executable
 add_executable(DuelArenaClient client/main.cc)
-# target_link_libraries(DuelArenaClient ClientLib CommonLib ThirdPartyLib SDL2::SDL2)
+# Define for logs
+target_compile_definitions(DuelArenaClient PRIVATE CLIENT)
 target_link_libraries(DuelArenaClient ClientLib CommonLib SDL2::SDL2)
+# Includes ThirdPartyLib (currently none)
+# target_link_libraries(DuelArenaClient ClientLib CommonLib ThirdPartyLib SDL2::SDL2)
 
 # Server executable
 add_executable(DuelArenaServer server/main.cc)
-# target_link_libraries(DuelArenaServer ServerLib CommonLib ThirdPartyLib)
+# Define for logs
+target_compile_definitions(DuelArenaServer PRIVATE SERVER)
 target_link_libraries(DuelArenaServer ServerLib CommonLib)
+# Includes ThirdPartyLib (currently none)
+# target_link_libraries(DuelArenaServer ServerLib CommonLib ThirdPartyLib)
 
 

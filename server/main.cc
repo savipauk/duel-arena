@@ -1,7 +1,8 @@
-#include <iostream>
+#include "common.h"
 
 int main() {
-  std::cout << "Server" << "\n";
+  darena::log << "Server started\n";
 
+  darena::log << "Server ended\n";
   return 0;
 }
