@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <memory>
 
 namespace darena {
 
@@ -31,10 +30,11 @@ class Logger {
 
 // Simple 2D vector with x and y coordinates.
 struct Position {
-  int x;
-  int y;
+  float x;
+  float y;
 
-  Position(int x = 0, int y = 0) : x(x), y(y) {}
+  Position() {}
+  Position(float x, float y = 0) : x(x), y(y) {}
 
   std::string to_string() const;
 };
@@ -42,11 +42,9 @@ struct Position {
 // Point on an island with position relative to the island and a height value.
 // Used in the island heightmap.
 struct IslandPoint {
-  Position position;
   int height;
 
-  IslandPoint(Position position, int height)
-      : position(position), height(height) {}
+  IslandPoint(int height) : height(height) {}
 
   std::string to_string() const;
 };
