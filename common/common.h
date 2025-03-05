@@ -27,29 +27,27 @@ class Logger {
   }
 };
 
+// Simple 2D vector with x and y coordinates.
 struct Position {
   int x;
   int y;
+
   Position(int x = 0, int y = 0) : x(x), y(y) {}
+
+  std::string to_string() const;
 };
 
-inline std::ostream& operator<<(std::ostream& os, const Position& pos) {
-  os << "(" << pos.x << ", " << pos.y << ")";
-  return os;
-}
-
+// Point on an island with position relative to the island and a height value.
+// Used in the island heightmap.
 struct IslandPoint {
   Position position;
   int height;
+
   IslandPoint(Position position, int height = 10)
       : position(position), height(height) {}
-};
 
-inline std::ostream& operator<<(std::ostream& os,
-                                const IslandPoint& height_map) {
-  os << "(" << height_map.position << ", " << height_map.height << ")";
-  return os;
-}
+  std::string to_string() const;
+};
 
 // Globals
 

@@ -2,9 +2,9 @@
 
 #include "client_lib.h"
 
-darena::IslandPoint point{{1,1}, 10};
+darena::IslandPoint point{{1, 1}, 10};
 std::vector<darena::IslandPoint> height_map{point};
-darena::Island island(height_map);
+darena::Island island({0, 0}, height_map);
 
 int main() {
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -30,7 +30,7 @@ int main() {
   SDL_RenderClear(renderer);
   SDL_RenderPresent(renderer);
 
-  island.print();
+  darena::log << island.to_string();
   SDL_Delay(2000);  // Wait for 2 seconds
 
   SDL_DestroyRenderer(renderer);
