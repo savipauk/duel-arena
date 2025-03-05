@@ -2,9 +2,17 @@
 
 #include "client_lib.h"
 
-darena::IslandPoint point{{1, 1}, 10};
-std::vector<darena::IslandPoint> height_map{point};
-darena::Island island({0, 0}, height_map);
+#define WINDOW_WIDTH 960
+#define WINDOW_HEIGHT 540
+
+darena::Island left_island;
+darena::Island right_island;
+
+void exit_game(SDL_Window* window, SDL_Renderer* renderer) {
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+}
 
 int main() {
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -12,8 +20,9 @@ int main() {
     return 1;
   }
 
-  SDL_Window* window = SDL_CreateWindow("Hello SDL", SDL_WINDOWPOS_CENTERED,
-                                        SDL_WINDOWPOS_CENTERED, 960, 540, 0);
+  SDL_Window* window =
+      SDL_CreateWindow("Hello SDL", SDL_WINDOWPOS_CENTERED,
+                       SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
   if (window == NULL) {
     printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
     return 1;
@@ -26,12 +35,18 @@ int main() {
     return 1;
   }
 
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
   SDL_RenderPresent(renderer);
 
-  darena::log << island.to_string();
-  SDL_Delay(2000);  // Wait for 2 seconds
+  SDL_Event e;
+  while (true) {
+    while (SDL_PollEvent(&e)) {
+      if (e.type == SDL_QUIT) {
+        exit_game(window, renderer);
+      }
+    }
+  }
 
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);

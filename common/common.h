@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 
 namespace darena {
 
@@ -21,6 +22,7 @@ class Logger {
   }
 #endif
 
+  // Caution with this!
   template <typename T>
   std::ostream& operator<<(const T& value) {
     return std::cout << value;
@@ -43,7 +45,7 @@ struct IslandPoint {
   Position position;
   int height;
 
-  IslandPoint(Position position, int height = 10)
+  IslandPoint(Position position, int height)
       : position(position), height(height) {}
 
   std::string to_string() const;
