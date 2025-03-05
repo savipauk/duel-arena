@@ -20,6 +20,11 @@ class Logger {
     return std::cout << message;
   }
 #endif
+
+  template <typename T>
+  std::ostream& operator<<(const T& value) {
+    return std::cout << value;
+  }
 };
 
 struct Position {
@@ -33,14 +38,15 @@ inline std::ostream& operator<<(std::ostream& os, const Position& pos) {
   return os;
 }
 
-struct HeightMap {
+struct IslandPoint {
   Position position;
   int height;
-  HeightMap(Position position, int height = 10)
+  IslandPoint(Position position, int height = 10)
       : position(position), height(height) {}
 };
 
-inline std::ostream& operator<<(std::ostream& os, const HeightMap& height_map) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const IslandPoint& height_map) {
   os << "(" << height_map.position << ", " << height_map.height << ")";
   return os;
 }

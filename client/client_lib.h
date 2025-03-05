@@ -1,17 +1,21 @@
+#include <vector>
+
 #include "common.h"
 
 namespace darena {
 
-// Island class used in the client. Defines the island position and height map.
+// Defines the island position and height map.
 class Island {
  public:
-  HeightMap height_map;
-  Island ();
-  Island (HeightMap height_map) : height_map(height_map) {}
-  Island (Position position, int height) : height_map(position, height) {}
+  std::vector<IslandPoint> height_map;
+  Island();
+  Island(std::vector<IslandPoint> height_map) : height_map(height_map) {}
 
   void print() {
-    darena::log << "Island" << height_map << "\n";
+    darena::log << "Island";
+    for (auto it = height_map.begin(); it != height_map.end(); it++) {
+      darena::log << *it << "\n";
+    }
   }
 };
 

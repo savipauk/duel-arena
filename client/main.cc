@@ -2,7 +2,8 @@
 
 #include "client_lib.h"
 
-darena::HeightMap height_map{{1,1}, 10};
+darena::IslandPoint point{{1,1}, 10};
+std::vector<darena::IslandPoint> height_map{point};
 darena::Island island(height_map);
 
 int main() {
