@@ -6,5 +6,6 @@ Final Thesis project.
 2. Generate the build files:
 - `./build.sh` to generate the build files
   - add `--link` flag to create a symlink to `out/compile_commands.json`
-- `./run.sh --clean` to build and run
+- `./run.sh` to build and run
+  - add `--clean` flag for a clean build
 - or do it manually yourself with CMake
