@@ -3,6 +3,7 @@
 #include <iostream>
 
 #define DARENA_PORT 50325
+#define DARENA_MAX_MESSAGE_LENGTH 1024
 
 namespace darena {
 
@@ -13,13 +14,22 @@ class Logger {
   std::ostream& operator<<(const std::string& message) {
     return std::cout << "CLIENT: " << message;
   }
+  std::ostream& operator<<(const char* message) {
+    return std::cout << "CLIENT: " << message;
+  }
 #elif defined(SERVER)
   std::ostream& operator<<(const std::string& message) {
+    return std::cout << "SERVER: " << message;
+  }
+  std::ostream& operator<<(const char* message) {
     return std::cout << "SERVER: " << message;
   }
 #else
   std::ostream& operator<<(const std::string& message) {
     return std::cout << message;
+  }
+  std::ostream& operator<<(const char* message) {
+    return std::cout << "NO-DEFINE: " << message;
   }
 #endif
 

@@ -43,6 +43,6 @@ target_link_libraries(DuelArenaClient ClientLib CommonLib SDL2::SDL2 SDL2_net::S
 add_executable(DuelArenaServer server/main.cc)
 # This defines the SERVER prefix in the logs
 target_compile_definitions(DuelArenaServer PRIVATE SERVER)
-target_link_libraries(DuelArenaServer ServerLib CommonLib)
+target_link_libraries(DuelArenaServer ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net)
 
 

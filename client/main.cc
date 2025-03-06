@@ -13,6 +13,8 @@
 #define ISLAND_POINT_EVERY 8
 #define ISLAND_NUM_OF_POINTS (ISLAND_WIDTH / ISLAND_POINT_EVERY)
 
+#define TARGET_FPS 60
+
 darena::Island left_island;
 darena::Island right_island;
 
@@ -20,6 +22,7 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 bool running = false;
 uint64_t last_frame_time = 0;
+float fps = 0;
 
 void setup_game() {
   // Create island heightmaps
@@ -100,6 +103,8 @@ void update() {
   // Calculate delta time
   float delta_time = (SDL_GetTicks64() - last_frame_time) / 1000.0;
   last_frame_time = SDL_GetTicks64();
+  // darena::log << "delta_time: " << delta_time << "\tfps: " << 1.f /
+  // delta_time << "\n";
 
   // Rest of the update function
 }
@@ -124,9 +129,12 @@ void render() {
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
 
+  // setup_game();
   draw_islands(renderer);
 
   SDL_RenderPresent(renderer);
+
+  // SDL_Delay(1000 * (1.0 / TARGET_FPS));
 }
 
 void destroy() {
@@ -135,13 +143,49 @@ void destroy() {
   SDL_Quit();
 }
 
+const char* server_ip = "127.0.0.1";
+const char* message = "Hello Server";
+IPaddress ip;
+TCPsocket tcp_socket;
+
+bool initialize_sdlnet() {
+  if (SDLNet_ResolveHost(&ip, server_ip, DARENA_PORT) == -1) {
+    darena::log << "SDLNet_ResolveHost Error: " << SDLNet_GetError() << "\n";
+    return false;
+  }
+  
+  tcp_socket = SDLNet_TCP_Open(&ip);
+  if (!tcp_socket) {
+    darena::log << "SDLNet_TCP_Open Error: " << SDLNet_GetError() << "\n";
+    return false;
+  }
+
+  return true;
+}
+
+void send_connection_request() {
+  int len = strlen(message);
+  int result = SDLNet_TCP_Send(tcp_socket, message, len);
+  if (result < len) {
+    darena::log << "SDLNet_TCP_Send Error: " << SDLNet_GetError() << "\n";
+  }
+  darena::log << "Sent message to server.\n";
+}
+
 int main() {
   running = initialize();
-  if (running == 0) {
+  if (!running) {
     return 1;
   }
 
   setup_game();
+  
+  if (!initialize_sdlnet()) {
+    return 1;
+  }
+
+  send_connection_request();
+  SDLNet_Quit();
 
   while (running) {
     process_input();
