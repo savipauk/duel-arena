@@ -1,5 +1,7 @@
 #include "client_lib.h"
 
+#include <SDL_net.h>
+
 #include <random>
 
 namespace darena {
@@ -11,6 +13,83 @@ std::string Island::to_string() const {
   }
   output.append(")");
   return output;
+}
+
+bool TCPClient::initialize_sdlnet() {
+  if (SDLNet_ResolveHost(&server_ip, server_ip_string, DARENA_PORT) == -1) {
+    darena::log << "SDLNet_ResolveHost Error: " << SDLNet_GetError() << "\n";
+    return false;
+  }
+
+  client_communication_socket = SDLNet_TCP_Open(&server_ip);
+  if (!client_communication_socket) {
+    darena::log << "SDLNet_TCP_Open Error: " << SDLNet_GetError() << "\n";
+    return false;
+  }
+
+  return true;
+}
+
+void TCPClient::send_connection_request() {
+  int len = strlen(message);
+  int result = SDLNet_TCP_Send(client_communication_socket, message, len);
+  if (result < len) {
+    darena::log << "SDLNet_TCP_Send Error: " << SDLNet_GetError() << "\n";
+  }
+  darena::log << "Sent message to server.\n";
+}
+
+void TCPClient::get_connection_response() { 
+  bool socket_ready = false;
+  socket_set = SDLNet_AllocSocketSet(1);
+  SDLNet_TCP_AddSocket(socket_set, client_communication_socket);
+  while (!socket_ready) {
+    darena::log << "Waiting for message...\n";
+    if (!SDLNet_CheckSockets(socket_set, DARENA_CONNECTION_AWAIT)) {
+      // Wait for DARENA_CONNECTION_AWAIT ms before checking connection again
+      darena::log << "Waiting for message...\n";
+      continue;
+    }
+
+    // Log the server IP and port
+    IPaddress* server_ip_address =
+        SDLNet_TCP_GetPeerAddress(client_communication_socket);
+    if (!server_ip_address) {
+      darena::log << "SDLNet_TCP_GetPeerAddress Error: " << SDLNet_GetError()
+                  << "\n";
+      continue;
+    }
+
+    uint32_t server_ip = SDL_SwapBE32(server_ip_address->host);
+    darena::log << "Incoming message from "
+                << std::to_string(server_ip >> 24) << "."
+                << std::to_string((server_ip >> 16) & 0xff) << "."
+                << std::to_string((server_ip >> 8) & 0xff) << "."
+                << std::to_string(server_ip & 0xff) << ":"
+                << std::to_string(server_ip_address->port) << "\n";
+
+    socket_ready = true;
+  }
+
+  while (true) {
+    char message[1024];
+    int len = SDLNet_TCP_Recv(client_communication_socket, message, 1024);
+    if (!len) {
+      darena::log << "SDLNet_TCP_Recv Error: " << SDLNet_GetError() << "\n";
+      break;
+    }
+
+    darena::log << "Received: \n" << std::string(message, len) << "\n";
+    break;
+  }
+
+}
+
+void TCPClient::sdlnet_cleanup() {
+  SDLNet_TCP_DelSocket(socket_set, client_communication_socket);
+  SDLNet_FreeSocketSet(socket_set);
+  SDLNet_TCP_Close(client_communication_socket);
+  SDLNet_Quit();
 }
 
 // Used to randomly generate numbers in create_heightmap()

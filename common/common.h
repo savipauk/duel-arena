@@ -4,6 +4,7 @@
 
 #define DARENA_PORT 50325
 #define DARENA_MAX_MESSAGE_LENGTH 1024
+#define DARENA_CONNECTION_AWAIT 250
 
 namespace darena {
 

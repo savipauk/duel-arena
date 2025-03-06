@@ -21,12 +21,12 @@ target_include_directories(CommonLib PUBLIC common)
 # Client libraries
 add_library(ClientLib STATIC client/client_lib.cc) 
 target_include_directories(ClientLib PUBLIC client)
-target_link_libraries(ClientLib CommonLib)
+target_link_libraries(ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net)
 
 # Server libraries
 add_library(ServerLib STATIC server/server_lib.cc) 
 target_include_directories(ServerLib PUBLIC server)
-target_link_libraries(ServerLib CommonLib) 
+target_link_libraries(ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net) 
 
 # TODO: Will maybe need this in the future
 # Third-party libraries (example)

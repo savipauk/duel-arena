@@ -3,9 +3,8 @@
 #include "common.h"
 
 #define MAX_CLIENTS 2
-#define CONNECTION_AWAIT 250
 
-bool running = false, client_connected[MAX_CLIENTS];
+bool game_running = false, client_connected[MAX_CLIENTS];
 TCPsocket server_listening_socket, client_communication_socket[MAX_CLIENTS];
 IPaddress ip;
 int client_id = 0;
@@ -43,9 +42,9 @@ void wait_for_connection(int id) {
         SDLNet_TCP_Accept(server_listening_socket);
     // No connection received
     if (!client_communication_socket[id]) {
-      // Wait for CONNECTION_AWAIT ms before checking connection again
+      // Wait for DARENA_CONNECTION_AWAIT ms before checking connection again
       darena::log << "Waiting for message...\n";
-      SDL_Delay(CONNECTION_AWAIT);
+      SDL_Delay(DARENA_CONNECTION_AWAIT);
       continue;
     }
 
@@ -107,9 +106,9 @@ int main() {
     client_connected[i] = false;
   }
 
-  running = initialize();
+  game_running = initialize();
 
-  if (!running) {
+  if (!game_running) {
     return 1;
   }
 
