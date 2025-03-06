@@ -1,4 +1,5 @@
-#include <SDL2/SDL.h>
+#include <SDL.h>
+#include <SDL_net.h>
 
 #include "client_lib.h"
 

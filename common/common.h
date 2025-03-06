@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#define DARENA_PORT 50325
+
 namespace darena {
 
 // Handles log for client/server specific prefixes.
