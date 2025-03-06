@@ -15,6 +15,11 @@
 darena::Island left_island;
 darena::Island right_island;
 
+SDL_Window* window;
+SDL_Renderer* renderer;
+bool running = false;
+uint64_t last_frame_time = 0;
+
 void setup_game() {
   // Create island heightmaps
   darena::Position left_island_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
@@ -66,51 +71,84 @@ void draw_islands(SDL_Renderer* renderer) {
   SDL_RenderDrawLines(renderer, island_points, ISLAND_NUM_OF_POINTS);
 }
 
-int main() {
-  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-    printf("SDL_Init Error: %s\n", SDL_GetError());
-    return 1;
+bool initialize() {
+  if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+    darena::log << "SDL_Init Error: " << SDL_GetError() << "\n";
+    return false;
   }
 
-  SDL_Window* window =
+  window =
       SDL_CreateWindow("Duel Arena", SDL_WINDOWPOS_CENTERED,
                        SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+
   if (window == NULL) {
-    printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
-    return 1;
+    darena::log << "SDL_CreateWindow Error: " << SDL_GetError() << "\n";
+    return false;
   }
 
-  SDL_Renderer* renderer =
-      SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   if (renderer == NULL) {
-    printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
-    return 1;
+    darena::log << "SDL_CreateRenderer Error: " << SDL_GetError() << "\n";
+    return false;
   }
 
-  // Draw background
+  return true;
+}
+
+void update() {
+  // Calculate delta time
+  float delta_time = (SDL_GetTicks64() - last_frame_time) / 1000.0;
+  last_frame_time = SDL_GetTicks64();
+
+  // Rest of the update function
+}
+
+void process_input() {
+  SDL_Event e;
+  while (SDL_PollEvent(&e)) {
+    switch (e.type) {
+      case SDL_QUIT:
+        running = false;
+        break;
+      case SDL_KEYDOWN:
+        // Pressed a key
+        darena::log << "Pressed a key.\n";
+        break;
+    }
+  }
+}
+
+void render() {
+  // Background
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
-
-  setup_game();
 
   draw_islands(renderer);
 
   SDL_RenderPresent(renderer);
+}
 
-  SDL_Event e;
-  bool running = true;
-  while (running) {
-    while (SDL_PollEvent(&e)) {
-      if (e.type == SDL_QUIT) {
-        running = false;
-        break;
-      }
-    }
-  }
-
+void destroy() {
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
+}
+
+int main() {
+  running = initialize();
+  if (running == 0) {
+    return 1;
+  }
+
+  setup_game();
+
+  while (running) {
+    process_input();
+    update();
+    render();
+  }
+
+  destroy();
 
   return 0;
 }
