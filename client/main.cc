@@ -14,6 +14,7 @@
 #define ISLAND_NUM_OF_POINTS (ISLAND_WIDTH / ISLAND_POINT_EVERY)
 
 #define TARGET_FPS 60
+#define DATA_TIMEOUT 5000
 
 darena::Island left_island;
 darena::Island right_island;
@@ -146,16 +147,16 @@ void destroy() {
 const char* server_ip = "127.0.0.1";
 const char* message = "Hello Server";
 IPaddress ip;
-TCPsocket tcp_socket;
+TCPsocket client_communication_socket;
 
 bool initialize_sdlnet() {
   if (SDLNet_ResolveHost(&ip, server_ip, DARENA_PORT) == -1) {
     darena::log << "SDLNet_ResolveHost Error: " << SDLNet_GetError() << "\n";
     return false;
   }
-  
-  tcp_socket = SDLNet_TCP_Open(&ip);
-  if (!tcp_socket) {
+
+  client_communication_socket = SDLNet_TCP_Open(&ip);
+  if (!client_communication_socket) {
     darena::log << "SDLNet_TCP_Open Error: " << SDLNet_GetError() << "\n";
     return false;
   }
@@ -165,11 +166,58 @@ bool initialize_sdlnet() {
 
 void send_connection_request() {
   int len = strlen(message);
-  int result = SDLNet_TCP_Send(tcp_socket, message, len);
+  int result = SDLNet_TCP_Send(client_communication_socket, message, len);
   if (result < len) {
     darena::log << "SDLNet_TCP_Send Error: " << SDLNet_GetError() << "\n";
   }
   darena::log << "Sent message to server.\n";
+}
+
+void get_response() {
+  bool socket_ready = false;
+  SDLNet_SocketSet socket_set = SDLNet_AllocSocketSet(1);
+  SDLNet_TCP_AddSocket(socket_set, client_communication_socket);
+  while (!socket_ready) {
+    darena::log << "Waiting for message...\n";
+    if (!SDLNet_CheckSockets(socket_set, DATA_TIMEOUT)) {
+      // Wait for CONNECTION_AWAIT ms before checking connection again
+      darena::log << "Waiting for message...\n";
+      continue;
+    }
+
+    // Log the server IP and port
+    IPaddress* server_ip_address =
+        SDLNet_TCP_GetPeerAddress(client_communication_socket);
+    if (!server_ip_address) {
+      darena::log << "SDLNet_TCP_GetPeerAddress Error: " << SDLNet_GetError()
+                  << "\n";
+      continue;
+    }
+
+    uint32_t server_ip = SDL_SwapBE32(server_ip_address->host);
+    darena::log << "Incoming message from "
+                << std::to_string(server_ip >> 24) << "."
+                << std::to_string((server_ip >> 16) & 0xff) << "."
+                << std::to_string((server_ip >> 8) & 0xff) << "."
+                << std::to_string(server_ip & 0xff) << ":"
+                << std::to_string(server_ip_address->port) << "\n";
+
+    socket_ready = true;
+  }
+
+  while (true) {
+    char message[1024];
+    int len = SDLNet_TCP_Recv(client_communication_socket, message, 1024);
+    if (!len) {
+      darena::log << "SDLNet_TCP_Recv Error: " << SDLNet_GetError() << "\n";
+      break;
+    }
+
+    darena::log << "Received: \n" << std::string(message, len) << "\n";
+    break;
+  }
+
+  SDLNet_TCP_Close(client_communication_socket);
 }
 
 int main() {
@@ -179,13 +227,14 @@ int main() {
   }
 
   setup_game();
-  
+
   if (!initialize_sdlnet()) {
     return 1;
   }
 
   send_connection_request();
-  SDLNet_Quit();
+  get_response();
+  // SDLNet_Quit();
 
   while (running) {
     process_input();

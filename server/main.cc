@@ -6,7 +6,7 @@
 #define CONNECTION_AWAIT 250
 
 bool running = false, client_connected[MAX_CLIENTS];
-TCPsocket server, client[MAX_CLIENTS];
+TCPsocket server_listening_socket, client_communication_socket[MAX_CLIENTS];
 IPaddress ip;
 int client_id = 0;
 
@@ -22,13 +22,13 @@ bool initialize() {
   }
 
   uint32_t client_ip = ip.host;
-  darena::log << "Listening from: "
-              << std::to_string(client_ip >> 24) << "."
+  darena::log << "Listening from: " << std::to_string(client_ip >> 24) << "."
               << std::to_string((client_ip >> 16) & 0xff) << "."
               << std::to_string((client_ip >> 8) & 0xff) << "."
               << std::to_string(client_ip & 0xff) << ":" << "\n";
-  server = SDLNet_TCP_Open(&ip);
-  if (!server) {
+  server_listening_socket = SDLNet_TCP_Open(&ip);
+
+  if (!server_listening_socket) {
     darena::log << "SDLNet_TCP_Open Error: " << SDLNet_GetError() << "\n";
     return false;
   }
@@ -39,9 +39,10 @@ bool initialize() {
 void wait_for_connection(int id) {
   while (!client_connected[id]) {
     darena::log << "Waiting for message...\n";
-    client[id] = SDLNet_TCP_Accept(server);
+    client_communication_socket[id] =
+        SDLNet_TCP_Accept(server_listening_socket);
     // No connection received
-    if (!client[id]) {
+    if (!client_communication_socket[id]) {
       // Wait for CONNECTION_AWAIT ms before checking connection again
       darena::log << "Waiting for message...\n";
       SDL_Delay(CONNECTION_AWAIT);
@@ -49,7 +50,8 @@ void wait_for_connection(int id) {
     }
 
     // Log the client IP and port
-    IPaddress* client_ip_address = SDLNet_TCP_GetPeerAddress(client[id]);
+    IPaddress* client_ip_address =
+        SDLNet_TCP_GetPeerAddress(client_communication_socket[id]);
     if (!client_ip_address) {
       darena::log << "SDLNet_TCP_GetPeerAddress Error: " << SDLNet_GetError()
                   << "\n";
@@ -71,17 +73,31 @@ void wait_for_connection(int id) {
 void read_message(int id) {
   while (true) {
     char message[DARENA_MAX_MESSAGE_LENGTH];
-    int len = SDLNet_TCP_Recv(client[id], message, DARENA_MAX_MESSAGE_LENGTH);
+    int len = SDLNet_TCP_Recv(client_communication_socket[id], message,
+                              DARENA_MAX_MESSAGE_LENGTH);
     if (!len) {
       darena::log << "SDLNet_Tcp_Recv Error: " << SDLNet_GetError() << "\n";
-      break;
+      // break;
+      SDL_Delay(250);
+      continue;
     }
 
     darena::log << "Received: \n" << std::string(message, len) << "\n";
     break;
   }
 
-  SDLNet_TCP_Close(client[id]);
+}
+
+void send_response(int id) {
+  const char* message = "i will generate the islands for you now";
+  int len = strlen(message);
+  int result = SDLNet_TCP_Send(client_communication_socket[id], message, len);
+  if (result < len) {
+    darena::log << "SDLNet_TCP_Send Error: " << SDLNet_GetError() << "\n";
+  }
+  darena::log << "Sent response to client " << std::to_string(id) << ".\n";
+
+  SDLNet_TCP_Close(client_communication_socket[client_id]);
 }
 
 int main() {
@@ -103,6 +119,7 @@ int main() {
   client_id = 0;
   wait_for_connection(client_id);
   read_message(client_id);
+  send_response(client_id);
 
   // client_id = 1;
   // wait_for_connection(client_id);
