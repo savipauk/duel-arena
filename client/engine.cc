@@ -1,7 +1,13 @@
 #include "engine.h"
 
+#include <SDL_opengl.h>
+#include <SDL_video.h>
+
 #include "client_lib.h"
 #include "common.h"
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl2.h"
 
 namespace darena {
 
@@ -10,6 +16,7 @@ std::unique_ptr<darena::Island> right_island;
 
 void setup_game() {
   // Create island heightmaps
+
   left_island = std::make_unique<darena::Island>();
   right_island = std::make_unique<darena::Island>();
   darena::Position left_island_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
@@ -30,35 +37,28 @@ void setup_game() {
   right_island->heightmap = right_heightmap;
 }
 
-void draw_islands(SDL_Renderer* renderer) {
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+void draw_islands() {
+  glColor3f(1.0f, 1.0f, 1.0f);
 
+  // Draw the left island
+  glBegin(GL_LINE_STRIP);
   int x = ISLAND_X_OFFSET;
-  int y = ISLAND_Y_OFFSET;
-  int i = 0;
-  SDL_Point* island_points =
-      (SDL_Point*)malloc(sizeof(SDL_Point) * ISLAND_NUM_OF_POINTS);
-  for (darena::IslandPoint point : left_island->heightmap) {
-    int x_increment = ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
-    y = ISLAND_Y_OFFSET + point.height;
-    SDL_Point sdl_point{x, y};
-    island_points[i] = sdl_point;
-    x += x_increment;
-    i++;
+  for (const darena::IslandPoint& point : left_island->heightmap) {
+    int y = ISLAND_Y_OFFSET + point.height;
+    glVertex2i(x, y);
+    x += ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
   }
-  SDL_RenderDrawLines(renderer, island_points, ISLAND_NUM_OF_POINTS);
+  glEnd();
 
+  // Draw the right island
   x = WINDOW_WIDTH - ISLAND_X_OFFSET;
-  i = 0;
-  for (darena::IslandPoint point : right_island->heightmap) {
-    int x_increment = ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
-    y = ISLAND_Y_OFFSET + point.height;
-    SDL_Point sdl_point{x, y};
-    island_points[i] = sdl_point;
-    x -= x_increment;
-    i++;
+  glBegin(GL_LINE_STRIP);
+  for (const darena::IslandPoint& point : right_island->heightmap) {
+    int y = ISLAND_Y_OFFSET + point.height;
+    glVertex2i(x, y);
+    x -= ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
   }
-  SDL_RenderDrawLines(renderer, island_points, ISLAND_NUM_OF_POINTS);
+  glEnd();
 }
 
 bool Engine::initialize() {
@@ -67,20 +67,45 @@ bool Engine::initialize() {
     return false;
   }
 
-  window =
-      SDL_CreateWindow("Duel Arena", SDL_WINDOWPOS_CENTERED,
-                       SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+  window = SDL_CreateWindow("Duel Arena", SDL_WINDOWPOS_CENTERED,
+                            SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT,
+                            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 
-  if (window == NULL) {
+  if (window == nullptr) {
     darena::log << "SDL_CreateWindow Error: " << SDL_GetError() << "\n";
     return false;
   }
 
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-  if (renderer == NULL) {
-    darena::log << "SDL_CreateRenderer Error: " << SDL_GetError() << "\n";
+  // Initialize OpenGL context
+  gl_context = SDL_GL_CreateContext(window);
+  if (gl_context == nullptr) {
+    darena::log << "SDL_GL_CreateContext Error: " << SDL_GetError() << "\n";
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return false;
   }
+
+  SDL_GL_MakeCurrent(window, gl_context);
+
+  // Enable vsync
+  SDL_GL_SetSwapInterval(1);
+
+  const char* glsl_version = "#version 130";
+
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
+
+  // Setup Platform/Renderer backends
+  ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+  ImGui_ImplOpenGL3_Init(glsl_version);
 
   return true;
 }
@@ -111,15 +136,49 @@ void Engine::update() {
 }
 
 void Engine::render() {
+  ImGuiIO& io = ImGui::GetIO();
+
+  // Start the Dear ImGui frame
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplSDL2_NewFrame();
+  ImGui::NewFrame();
+
+  // Properties window
+  ImGui::Begin("My Window");
+  ImGui::Text("Color");
+  ImGui::End();
+
   // Background
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  SDL_RenderClear(renderer);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
 
-  draw_islands(renderer);
+  // Make (0,0) top left
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, -1, 1);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 
-  SDL_RenderPresent(renderer);
+  // draw_islands(renderer);
+  draw_islands();
 
-  // SDL_Delay(1000 * (1.0 / TARGET_FPS));
+  // Render ImGui
+  ImGui::Render();
+  glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+  // Swap the window
+  SDL_GL_SwapWindow(window);
+
+  // Frame limiting
+  SDL_Delay(1000 * (1.0 / TARGET_FPS));
+
+  // Error checking
+  // TODO: Consider returning here
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    darena::log << "OpenGL Error: " << std::to_string(err) << "\n";
+  }
 }
 
 bool Engine::run() {
@@ -142,9 +201,13 @@ bool Engine::run() {
     return false;
   }
 
-
+  noerr = initialize();
+  if (!noerr) {
+    return false;
+  }
   game_running = true;
   setup_game();
+  bool show_demo_window = true;
 
   while (game_running) {
     process_input();
@@ -152,13 +215,21 @@ bool Engine::run() {
     render();
   }
 
-  client.cleanup();
+  // client.cleanup();
   return true;
 }
 
 void Engine::cleanup() {
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
+
+  if (gl_context) {
+    SDL_GL_DeleteContext(gl_context);
+  }
+  if (window) {
+    SDL_DestroyWindow(window);
+  }
   SDL_Quit();
 }
 

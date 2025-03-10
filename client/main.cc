@@ -6,12 +6,8 @@
 int main() {
   darena::Engine engine;
 
-  bool noerr = engine.initialize(); 
-  if (!noerr) {
-    return 1;
-  }
 
-  noerr = engine.run();
+  bool noerr = engine.run();
 
   if (!noerr) {
     engine.cleanup();
