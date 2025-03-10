@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL_net.h>
 #include <iostream>
 
 #define DARENA_PORT 50325
@@ -61,6 +62,13 @@ struct IslandPoint {
 
   std::string to_string() const;
 };
+
+struct TCPConnection {
+  
+};
+
+std::string ipaddress_to_string(IPaddress* address);
+std::string unit32_t_address_to_string(uint32_t address);
 
 // Globals
 

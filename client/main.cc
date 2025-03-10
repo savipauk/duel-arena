@@ -155,11 +155,21 @@ int main() {
   const char* message = "Hello Server";
   darena::TCPClient client{server_ip, message};
 
-  if (!client.initialize_sdlnet()) {
+  bool noerr = client.initialize_sdlnet();
+  if (!noerr) {
     return 1;
   }
-  client.send_connection_request();
-  client.get_connection_response();
+
+  noerr = client.send_connection_request();
+  if (!noerr) {
+    return 1;
+  }
+
+  noerr = client.get_connection_response();
+  if (!noerr) {
+    return 1;
+  }
+
   client.sdlnet_cleanup(); 
 
   while (game_running) {

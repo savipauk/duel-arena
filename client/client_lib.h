@@ -38,8 +38,8 @@ struct TCPClient {
         socket_set(NULL) {}
 
   bool initialize_sdlnet();
-  void send_connection_request();
-  void get_connection_response();
+  bool send_connection_request();
+  bool get_connection_response();
   void sdlnet_cleanup();
 };
 

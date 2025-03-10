@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Generates compile_commands.json in out/ 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Find SDL2 (Only for the client)
+# Find SDL2
 find_package(SDL2 REQUIRED)
 find_package(SDL2_net REQUIRED)
 
@@ -17,6 +17,7 @@ find_package(SDL2_net REQUIRED)
 # Shared by client & server
 add_library(CommonLib STATIC common/common.cc) 
 target_include_directories(CommonLib PUBLIC common)
+target_link_libraries(CommonLib PUBLIC SDL2::SDL2 SDL2_net::SDL2_net)
 
 # Client libraries
 add_library(ClientLib STATIC client/client_lib.cc) 
