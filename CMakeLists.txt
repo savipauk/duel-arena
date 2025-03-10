@@ -32,16 +32,25 @@ target_link_libraries(ImGui PUBLIC SDL2::SDL2)
 # Internal libraries
 # Shared by client & server
 add_library(CommonLib STATIC common/common.cc) 
+# This defines the SERVER prefix in the logs
+target_compile_definitions(CommonLib PRIVATE COMMON)
 target_include_directories(CommonLib PUBLIC common)
 target_link_libraries(CommonLib PUBLIC SDL2::SDL2 SDL2_net::SDL2_net)
 
 # Client libraries
-add_library(ClientLib STATIC client/client_lib.cc) 
+add_library(ClientLib STATIC 
+  client/client_lib.cc
+  client/engine.cc
+) 
+# This defines the CLIENT prefix in the logs
+target_compile_definitions(ClientLib PRIVATE CLIENT)
 target_include_directories(ClientLib PUBLIC client)
 target_link_libraries(ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui)
 
 # Server libraries
 add_library(ServerLib STATIC server/server_lib.cc) 
+# This defines the SERVER prefix in the logs
+target_compile_definitions(ServerLib PRIVATE SERVER)
 target_include_directories(ServerLib PUBLIC server)
 target_link_libraries(ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net) 
 

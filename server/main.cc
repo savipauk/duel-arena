@@ -11,7 +11,7 @@ int main() {
   darena::log << "Starting server...\n";
 
   darena::TCPServer server{};
-  game_running = server.sdlnet_initialize();
+  game_running = server.initialize();
 
   if (!game_running) {
     return 1;
@@ -39,7 +39,7 @@ int main() {
   // client_id = 1;
   // wait_for_connection(client_id);
 
-  server.sdlnet_cleanup();
+  server.cleanup();
   darena::log << "Server ended.\n";
 
   return 0;

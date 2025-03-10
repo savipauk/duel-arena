@@ -1,9 +1,23 @@
+#pragma once
+
 #include <SDL_net.h>
 
 #include <memory>
 #include <vector>
 
 #include "common.h"
+
+#define WINDOW_WIDTH 960
+#define WINDOW_HEIGHT 540
+
+#define ISLAND_X_OFFSET 80
+#define ISLAND_Y_OFFSET 320
+#define ISLAND_HEIGHT 100
+#define ISLAND_WIDTH 320
+#define ISLAND_POINT_EVERY 8
+#define ISLAND_NUM_OF_POINTS (ISLAND_WIDTH / ISLAND_POINT_EVERY)
+
+#define TARGET_FPS 60
 
 namespace darena {
 
@@ -37,10 +51,10 @@ struct TCPClient {
         client_communication_socket(NULL),
         socket_set(NULL) {}
 
-  bool initialize_sdlnet();
+  bool initialize();
   bool send_connection_request();
   bool get_connection_response();
-  void sdlnet_cleanup();
+  void cleanup();
 };
 
 std::vector<IslandPoint> create_heightmap(int num_of_points);

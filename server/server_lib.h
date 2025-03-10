@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL_net.h>
 
 #define MAX_CLIENTS 2
@@ -20,11 +22,11 @@ struct TCPServer {
     }
   }
 
-  bool sdlnet_initialize();
+  bool initialize();
   bool wait_for_connection(int id);
   bool read_message(int id);
   bool send_response(int id);
-  void sdlnet_cleanup();
+  void cleanup();
 };
 
 }  // namespace darena

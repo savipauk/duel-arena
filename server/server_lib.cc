@@ -4,7 +4,7 @@
 
 namespace darena {
 
-bool TCPServer::sdlnet_initialize() {
+bool TCPServer::initialize() {
   if (SDLNet_Init() == -1) {
     darena::log << "SDLNet_Init Error: " << SDLNet_GetError() << "\n";
     return false;
@@ -107,7 +107,7 @@ bool TCPServer::send_response(int id) {
   return true;
 }
 
-void TCPServer::sdlnet_cleanup() {
+void TCPServer::cleanup() {
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (client_connected[i]) {
       SDLNet_TCP_DelSocket(socket_set, client_communication_socket[i]);

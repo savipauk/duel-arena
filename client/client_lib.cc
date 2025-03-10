@@ -15,7 +15,7 @@ std::string Island::to_string() const {
   return output;
 }
 
-bool TCPClient::initialize_sdlnet() {
+bool TCPClient::initialize() {
   if (SDLNet_ResolveHost(&server_ip, server_ip_string, DARENA_PORT) == -1) {
     darena::log << "SDLNet_ResolveHost Error: " << SDLNet_GetError() << "\n";
     return false;
@@ -68,22 +68,18 @@ bool TCPClient::get_connection_response() {
     socket_ready = true;
   }
 
-  while (true) {
-    char message[1024];
-    int len = SDLNet_TCP_Recv(client_communication_socket, message, 1024);
-    if (!len) {
-      darena::log << "SDLNet_TCP_Recv Error: " << SDLNet_GetError() << "\n";
-      break;
-    }
-
-    darena::log << "Received: \n" << std::string(message, len) << "\n";
-    break;
+  char message[1024];
+  int len = SDLNet_TCP_Recv(client_communication_socket, message, 1024);
+  if (!len) {
+    darena::log << "SDLNet_TCP_Recv Error: " << SDLNet_GetError() << "\n";
+    return false;
   }
+  darena::log << "Received: \n" << std::string(message, len) << "\n";
 
   return true;
 }
 
-void TCPClient::sdlnet_cleanup() {
+void TCPClient::cleanup() {
   SDLNet_TCP_DelSocket(socket_set, client_communication_socket);
   SDLNet_FreeSocketSet(socket_set);
   SDLNet_TCP_Close(client_communication_socket);
