@@ -23,10 +23,12 @@ add_library(ImGui STATIC
     third_party/imgui/backends/imgui_impl_sdl2.cpp
     third_party/imgui/backends/imgui_impl_sdlrenderer2.cpp
     third_party/imgui/backends/imgui_impl_opengl3.cpp
+    third_party/imgui/misc/cpp/imgui_stdlib.cpp
 )
 target_include_directories(ImGui PUBLIC
     third_party/imgui
     third_party/imgui/backends
+    third_party/imgui/misc/cpp
 )
 target_link_libraries(ImGui PUBLIC SDL2::SDL2)
 

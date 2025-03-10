@@ -2,11 +2,30 @@
 
 #include <SDL.h>
 
+#include <memory>
+#include <string>
+
 namespace darena {
+
+enum Connection {
+  INITIAL,
+  CONNECTING,
+  CONNECTED,
+  DISCONNECTED
+};
+
+struct GameState {
+  std::string username;
+  std::string server_ip;
+  Connection connection;
+
+  GameState() : username("Player"), server_ip("127.0.0.1"), connection(INITIAL) {}
+};
 
 struct Engine {
   SDL_Window* window;
   SDL_GLContext gl_context;
+  std::unique_ptr<GameState> state;
   bool game_running;
   uint64_t last_frame_time;
   float fps;
@@ -14,6 +33,7 @@ struct Engine {
   Engine()
       : window(nullptr),
         gl_context(nullptr),
+        state(std::make_unique<GameState>()),
         game_running(false),
         last_frame_time(SDL_GetTicks64()),
         fps(0) {}

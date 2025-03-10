@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl2.h"
+#include "imgui_stdlib.h"
 
 namespace darena {
 
@@ -96,9 +97,10 @@ bool Engine::initialize() {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
-  (void)io;
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard |
+                    ImGuiConfigFlags_NavEnableSetMousePos;
+
+  io.FontGlobalScale = 1.5f;
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
@@ -113,12 +115,12 @@ bool Engine::initialize() {
 void Engine::process_input() {
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
+    ImGui_ImplSDL2_ProcessEvent(&e);
     switch (e.type) {
       case SDL_QUIT:
         game_running = false;
         break;
       case SDL_KEYDOWN:
-        // Pressed a key
         darena::log << "Pressed a key.\n";
         break;
     }
@@ -136,18 +138,6 @@ void Engine::update() {
 }
 
 void Engine::render() {
-  ImGuiIO& io = ImGui::GetIO();
-
-  // Start the Dear ImGui frame
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame();
-  ImGui::NewFrame();
-
-  // Properties window
-  ImGui::Begin("My Window");
-  ImGui::Text("Color");
-  ImGui::End();
-
   // Background
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -159,18 +149,44 @@ void Engine::render() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  draw_islands();
+  switch (state->connection) {
+    case INITIAL: {
+      // Render username control in the middle
+      ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
+      ImVec2 window_pos =
+          ImVec2(viewport_size.x * 0.5f, viewport_size.y * 0.5f);
+      ImVec2 window_size = ImVec2(WINDOW_WIDTH * 0.35f, WINDOW_HEIGHT * 0.25f);
+      ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowSize(window_size);
 
-  // Render ImGui
-  ImGui::Render();
-  glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+      ImGui::Begin("INPUT", nullptr,
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-  // Swap the window
-  SDL_GL_SwapWindow(window);
+      ImGui::InputText("Username", &state->username);
+      ImGui::InputText("Server IP", &state->server_ip);
+      bool button = ImGui::Button("Connect");
 
-  // Frame limiting
-  SDL_Delay(1000 * (1.0 / TARGET_FPS));
+      if (button) {
+        state->connection = CONNECTED;
+      }
+
+      ImGui::End();
+      break;
+    }
+    case CONNECTING: {
+      break;
+    }
+    case CONNECTED: {
+      draw_islands();
+      break;
+    }
+    case DISCONNECTED: {
+      break;
+    }
+    default: {
+      // Nothing
+    }
+  }
 
   // Error checking
   // TODO: Consider returning here
@@ -181,24 +197,25 @@ void Engine::render() {
 }
 
 bool Engine::run() {
+  bool noerr = true;
   const char* server_ip = "127.0.0.1";
   const char* message = "Hello Server";
-  darena::TCPClient client{server_ip, message};
-
-  bool noerr = client.initialize();
-  if (!noerr) {
-    return false;
-  }
-
-  noerr = client.send_connection_request();
-  if (!noerr) {
-    return false;
-  }
-
-  noerr = client.get_connection_response();
-  if (!noerr) {
-    return false;
-  }
+  // darena::TCPClient client{server_ip, message};
+  //
+  // noerr = client.initialize();
+  // if (!noerr) {
+  //   return false;
+  // }
+  //
+  // noerr = client.send_connection_request();
+  // if (!noerr) {
+  //   return false;
+  // }
+  //
+  // noerr = client.get_connection_response();
+  // if (!noerr) {
+  //   return false;
+  // }
 
   noerr = initialize();
   if (!noerr) {
@@ -210,8 +227,34 @@ bool Engine::run() {
 
   while (game_running) {
     process_input();
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
     update();
     render();
+
+    // Render ImGui
+    ImGui::Render();
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // Swap the window
+    SDL_GL_SwapWindow(window);
+
+    // Frame limiting
+    SDL_Delay(1000 * (1.0 / TARGET_FPS));
+
+    // Error checking
+    // TODO: Consider returning here
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+      darena::log << "OpenGL Error: " << std::to_string(err) << "\n";
+    }
   }
 
   // client.cleanup();

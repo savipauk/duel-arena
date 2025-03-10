@@ -9,6 +9,7 @@
 
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 540
+#define FONT_SIZE 16
 
 #define ISLAND_X_OFFSET 80
 #define ISLAND_Y_OFFSET 320
