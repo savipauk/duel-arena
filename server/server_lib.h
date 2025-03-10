@@ -14,9 +14,9 @@ struct TCPServer {
   int client_id = 0;
 
   TCPServer()
-      : server_listening_socket(NULL),
-        client_communication_socket(NULL),
-        socket_set(NULL) {
+      : server_listening_socket(nullptr),
+        client_communication_socket(nullptr),
+        socket_set(nullptr) {
     for (int i = 0; i < MAX_CLIENTS; i++) {
       client_connected[i] = false;
     }

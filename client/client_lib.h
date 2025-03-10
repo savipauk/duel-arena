@@ -48,8 +48,8 @@ struct TCPClient {
       : server_ip_string(server_ip_string),
         message(message),
         server_ip(0),
-        client_communication_socket(NULL),
-        socket_set(NULL) {}
+        client_communication_socket(nullptr),
+        socket_set(nullptr) {}
 
   bool initialize();
   bool send_connection_request();

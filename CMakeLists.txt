@@ -22,12 +22,17 @@ add_library(ImGui STATIC
     third_party/imgui/imgui_widgets.cpp
     third_party/imgui/backends/imgui_impl_sdl2.cpp
     third_party/imgui/backends/imgui_impl_sdlrenderer2.cpp
+    third_party/imgui/backends/imgui_impl_opengl3.cpp
 )
 target_include_directories(ImGui PUBLIC
     third_party/imgui
     third_party/imgui/backends
 )
 target_link_libraries(ImGui PUBLIC SDL2::SDL2)
+
+# OpenGL
+find_package(OpenGL REQUIRED)
+target_link_libraries(ImGui PUBLIC SDL2::SDL2 OpenGL::GL)
 
 # Internal libraries
 # Shared by client & server

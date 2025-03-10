@@ -115,7 +115,7 @@ void TCPServer::cleanup() {
   }
   if (socket_set) {
     SDLNet_FreeSocketSet(socket_set);
-    socket_set = NULL;
+    socket_set = nullptr;
   }
   SDLNet_TCP_Close(client_communication_socket[client_id]);
   SDLNet_Quit();

@@ -6,20 +6,23 @@ namespace darena {
 
 struct Engine {
   SDL_Window* window;
-  SDL_Renderer* renderer;
+  SDL_GLContext gl_context;
   bool game_running;
   uint64_t last_frame_time;
   float fps;
 
   Engine()
-      : window(NULL),
-        renderer(NULL),
+      : window(nullptr),
+        gl_context(nullptr),
         game_running(false),
-        last_frame_time(0),
+        last_frame_time(SDL_GetTicks64()),
         fps(0) {}
 
   // Initializes the SDL window and renderer
   bool initialize();
+
+  // Setup the imgui context
+  // void setup_imgui_context();
 
   // Does game preprocessing (TCP server connection) and then runs the game loop
   // of process_input(), update() and render()
