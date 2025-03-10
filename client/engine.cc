@@ -61,30 +61,6 @@ void draw_islands() {
   glEnd();
 }
 
-void draw_islands_opengl() {
-  glColor3f(1.0f, 1.0f, 1.0f);
-
-  // Draw the left island
-  glBegin(GL_LINE_STRIP);
-  int x = ISLAND_X_OFFSET;
-  for (const darena::IslandPoint& point : left_island->heightmap) {
-    int y = ISLAND_Y_OFFSET + point.height;
-    glVertex2i(x, y);
-    x += ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
-  }
-  glEnd();
-
-  // Draw the right island
-  x = WINDOW_WIDTH - ISLAND_X_OFFSET;
-  glBegin(GL_LINE_STRIP);
-  for (const darena::IslandPoint& point : right_island->heightmap) {
-    int y = ISLAND_Y_OFFSET + point.height;
-    glVertex2i(x, y);
-    x -= ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
-  }
-  glEnd();
-}
-
 bool Engine::initialize() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     darena::log << "SDL_Init Error: " << SDL_GetError() << "\n";
