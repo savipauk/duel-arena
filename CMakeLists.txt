@@ -13,6 +13,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_net REQUIRED)
 
+# ImGui
+add_library(ImGui STATIC
+    third_party/imgui/imgui.cpp
+    third_party/imgui/imgui_demo.cpp
+    third_party/imgui/imgui_draw.cpp
+    third_party/imgui/imgui_tables.cpp
+    third_party/imgui/imgui_widgets.cpp
+    third_party/imgui/backends/imgui_impl_sdl2.cpp
+    third_party/imgui/backends/imgui_impl_sdlrenderer2.cpp
+)
+target_include_directories(ImGui PUBLIC
+    third_party/imgui
+    third_party/imgui/backends
+)
+target_link_libraries(ImGui PUBLIC SDL2::SDL2)
+
 # Internal libraries
 # Shared by client & server
 add_library(CommonLib STATIC common/common.cc) 
@@ -22,23 +38,18 @@ target_link_libraries(CommonLib PUBLIC SDL2::SDL2 SDL2_net::SDL2_net)
 # Client libraries
 add_library(ClientLib STATIC client/client_lib.cc) 
 target_include_directories(ClientLib PUBLIC client)
-target_link_libraries(ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net)
+target_link_libraries(ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui)
 
 # Server libraries
 add_library(ServerLib STATIC server/server_lib.cc) 
 target_include_directories(ServerLib PUBLIC server)
 target_link_libraries(ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net) 
 
-# TODO: Will maybe need this in the future
-# Third-party libraries (example)
-# add_library(ThirdPartyLib STATIC thirdparty/some_lib.cc)
-# target_include_directories(ThirdPartyLib PUBLIC thirdparty)
-
 # Client executable
 add_executable(DuelArenaClient client/main.cc)
 # This defines the CLIENT prefix in the logs
 target_compile_definitions(DuelArenaClient PRIVATE CLIENT)
-target_link_libraries(DuelArenaClient ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net) 
+target_link_libraries(DuelArenaClient ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui) 
 
 # Server executable
 add_executable(DuelArenaServer server/main.cc)
