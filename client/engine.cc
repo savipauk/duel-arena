@@ -135,9 +135,32 @@ void Engine::update() {
   // delta_time << "\n";
 
   // Rest of the update function
+  switch (game->connection) {
+    case INITIAL: {
+      break;
+    }
+    case CONNECTING: {
+      bool successfully_connected = game->connect_to_server();
+      if (successfully_connected) {
+        game->connection = CONNECTED;
+      }
+      break;
+    }
+    case CONNECTED: {
+      break;
+    }
+    case DISCONNECTED: {
+      break;
+    }
+    default: {
+      // Nothing
+    }
+  }
+
+  darena::log << "Connection: " << std::to_string(game->connection) << "\n";
 }
 
-void Engine::render() {
+bool Engine::render() {
   // Background
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -149,7 +172,7 @@ void Engine::render() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  switch (state->connection) {
+  switch (game->connection) {
     case INITIAL: {
       // Render username control in the middle
       ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
@@ -162,12 +185,12 @@ void Engine::render() {
       ImGui::Begin("INPUT", nullptr,
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-      ImGui::InputText("Username", &state->username);
-      ImGui::InputText("Server IP", &state->server_ip);
+      ImGui::InputText("Username", &game->username);
+      ImGui::InputText("Server IP", &game->server_ip);
       bool button = ImGui::Button("Connect");
 
       if (button) {
-        state->connection = CONNECTED;
+        game->connection = CONNECTING;
       }
 
       ImGui::End();
@@ -191,31 +214,24 @@ void Engine::render() {
   // Error checking
   // TODO: Consider returning here
   GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    darena::log << "OpenGL Error: " << std::to_string(err) << "\n";
+  switch (err) {
+    case GL_NO_ERROR:
+      return true;
+
+    case GL_INVALID_OPERATION:
+    case GL_OUT_OF_MEMORY:
+      darena::log << "OpenGL Error: " << std::to_string(err) << "\n";
+      darena::log << "Critical OpenGL Error. Stopping rendering.\n";
+      return false;
+
+    default:
+      darena::log << "OpenGL Error: " << std::to_string(err) << "\n";
+      return true;
   }
 }
 
 bool Engine::run() {
   bool noerr = true;
-  const char* server_ip = "127.0.0.1";
-  const char* message = "Hello Server";
-  // darena::TCPClient client{server_ip, message};
-  //
-  // noerr = client.initialize();
-  // if (!noerr) {
-  //   return false;
-  // }
-  //
-  // noerr = client.send_connection_request();
-  // if (!noerr) {
-  //   return false;
-  // }
-  //
-  // noerr = client.get_connection_response();
-  // if (!noerr) {
-  //   return false;
-  // }
 
   noerr = initialize();
   if (!noerr) {
@@ -236,7 +252,10 @@ bool Engine::run() {
     ImGui::NewFrame();
 
     update();
-    render();
+    noerr = render();
+    if (!noerr) {
+      return false;
+    }
 
     // Render ImGui
     ImGui::Render();

@@ -37,17 +37,17 @@ struct Island {
 
 // TODO: This should maybe be a class with the network stuff being private
 struct TCPClient {
-  const char* server_ip_string;
+  std::string server_ip_string;
   // TODO: This should contain the player name or something similar
   // TODO: Add serialization
-  const char* message;
+  std::string username;
   IPaddress server_ip;
   TCPsocket client_communication_socket;
   SDLNet_SocketSet socket_set;
 
-  TCPClient(const char* server_ip_string, const char* message)
+  TCPClient(const std::string& server_ip_string, const std::string& username)
       : server_ip_string(server_ip_string),
-        message(message),
+        username(username),
         server_ip(0),
         client_communication_socket(nullptr),
         socket_set(nullptr) {}

@@ -16,7 +16,8 @@ std::string Island::to_string() const {
 }
 
 bool TCPClient::initialize() {
-  if (SDLNet_ResolveHost(&server_ip, server_ip_string, DARENA_PORT) == -1) {
+  const char* server_ip_cc = server_ip_string.c_str();
+  if (SDLNet_ResolveHost(&server_ip, server_ip_cc, DARENA_PORT) == -1) {
     darena::log << "SDLNet_ResolveHost Error: " << SDLNet_GetError() << "\n";
     return false;
   }
@@ -31,8 +32,9 @@ bool TCPClient::initialize() {
 }
 
 bool TCPClient::send_connection_request() {
-  int len = strlen(message);
-  int result = SDLNet_TCP_Send(client_communication_socket, message, len);
+  int len = username.length();
+  const char* username_cc = username.c_str();
+  int result = SDLNet_TCP_Send(client_communication_socket, username_cc, len);
   if (result < len) {
     darena::log << "SDLNet_TCP_Send Error: " << SDLNet_GetError() << "\n";
     return false;

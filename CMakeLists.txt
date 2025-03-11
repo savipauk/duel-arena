@@ -48,6 +48,7 @@ target_link_libraries(CommonLib PUBLIC SDL2::SDL2 SDL2_net::SDL2_net)
 add_library(ClientLib STATIC 
   client/client_lib.cc
   client/engine.cc
+  client/game.cc
 ) 
 # This defines the CLIENT prefix in the logs
 target_compile_definitions(ClientLib PRIVATE CLIENT)
