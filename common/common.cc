@@ -11,7 +11,8 @@ std::string Position::to_string() const {
 }
 
 std::string IslandPoint::to_string() const {
-  return "IslandPoint(" + std::to_string(height) + ")";
+  return "IslandPoint(" + std::to_string(height) + std::to_string(strength) +
+         ")";
 }
 
 std::string unit32_t_address_to_string(uint32_t address) {

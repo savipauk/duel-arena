@@ -86,12 +86,18 @@ struct Position {
 
 // Point on an island with position relative to the island and a height value.
 // Used in the island heightmap.
+// TODO: Add terrain strength attribute randomizer
 struct IslandPoint {
   int height;
+  int strength = 1;
 
-  IslandPoint(int height) : height(height) {}
+  IslandPoint() {}
+  IslandPoint(int height) : height(height), strength(1) {} // TODO: Remove this
+  IslandPoint(int height, int strength) : height(height), strength(strength) {}
 
   std::string to_string() const;
+
+  MSGPACK_DEFINE(height, strength);
 };
 
 struct TCPMessage {

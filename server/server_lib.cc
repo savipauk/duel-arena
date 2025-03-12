@@ -78,37 +78,62 @@ bool TCPServer::read_message(int id) {
       // Wait for DARENA_CONNECTION_AWAIT ms before checking connection again
       continue;
     }
-
     break;
   }
 
-  char message[DARENA_MAX_MESSAGE_LENGTH];
-  int len = SDLNet_TCP_Recv(client_communication_socket[id], message,
-                            DARENA_MAX_MESSAGE_LENGTH);
+  // Read the message length first
+  uint32_t message_size;
+  int len = SDLNet_TCP_Recv(client_communication_socket[id], &message_size,
+                            sizeof(message_size));
   if (!len) {
-    darena::log << "SDLNet_Tcp_Recv Error: " << SDLNet_GetError() << "\n";
+    darena::log << "SDLNet_TCP_Recv Error, len=" << len
+                << "\nError: " << SDLNet_GetError() << "\n ";
+    return {};
+  }
+  message_size = ntohl(message_size);
+  darena::log << "Next message size: " << message_size << "\n";
+
+  // Allocate buffer for the message
+  std::vector<char> message(message_size);
+  len = SDLNet_TCP_Recv(client_communication_socket[id], message.data(),
+                        message_size);
+  if (!len) {
+    darena::log << "SDLNet_Tcp_Recv Error, len=" << len
+                << "\nError: " << SDLNet_GetError() << "\n";
     return false;
   }
+  darena::log << "Received message from id: " << id << "\n";
 
-  darena::log << "Received: \n" << std::string(message, len) << "\n";
+  msgpack::unpacked result;
+  msgpack::unpack(result, message.data(), message_size);
+  msgpack::object obj = result.get();
+
+  darena::TCPMessage tcp_message;
+  obj.convert(tcp_message);
+
+  darena::log << "id: " << tcp_message.id << "\tmsg: " << tcp_message.data
+              << "\n";
+
   return true;
 }
 
 bool TCPServer::send_response(int id, msgpack::sbuffer data) {
   uint32_t message_size = htonl(data.size());
-  int result = SDLNet_TCP_Send(client_communication_socket[id], &message_size, sizeof(message_size));
+  int result = SDLNet_TCP_Send(client_communication_socket[id], &message_size,
+                               sizeof(message_size));
   if (result < sizeof(message_size)) {
     darena::log << "SDLNet_TCP_Send Error, len=" << result
-                << "\nError:" << SDLNet_GetError() << "\n";
+                << "\nError: " << SDLNet_GetError() << "\n";
     return false;
   }
-  darena::log << "Sent message length to client " << std::to_string(id) << ".\n";
+  darena::log << "Sent message length to client " << std::to_string(id)
+              << ".\n";
 
   result = SDLNet_TCP_Send(client_communication_socket[id], data.data(),
-                               data.size());
+                           data.size());
   if (result < data.size()) {
     darena::log << "SDLNet_TCP_Send Error, len=" << result
-                << "\nError:" << SDLNet_GetError() << "\n";
+                << "\nError: " << SDLNet_GetError() << "\n";
     return false;
   }
   darena::log << "Sent response to client " << std::to_string(id) << ".\n";

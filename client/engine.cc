@@ -12,57 +12,6 @@
 
 namespace darena {
 
-std::unique_ptr<darena::Island> left_island;
-std::unique_ptr<darena::Island> right_island;
-
-void setup_game() {
-  // Create island heightmaps
-
-  left_island = std::make_unique<darena::Island>();
-  right_island = std::make_unique<darena::Island>();
-
-  // darena::Position left_island_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
-  // left_island->position =
-  //     std::make_unique<darena::Position>(left_island_position);
-  //
-  // darena::Position right_island_position{
-  //     WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
-  // right_island->position =
-  //     std::make_unique<darena::Position>(right_island_position);
-  //
-  // std::vector<darena::IslandPoint> left_heightmap =
-  //     darena::create_heightmap(ISLAND_NUM_OF_POINTS);
-  // left_island->heightmap = left_heightmap;
-  //
-  // std::vector<darena::IslandPoint> right_heightmap =
-  //     darena::create_heightmap(ISLAND_NUM_OF_POINTS);
-  // right_island->heightmap = right_heightmap;
-}
-
-void draw_islands() {
-  glColor3f(1.0f, 1.0f, 1.0f);
-
-  // Draw the left island
-  glBegin(GL_LINE_STRIP);
-  int x = ISLAND_X_OFFSET;
-  for (const darena::IslandPoint& point : left_island->heightmap) {
-    int y = ISLAND_Y_OFFSET + point.height;
-    glVertex2i(x, y);
-    x += ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
-  }
-  glEnd();
-
-  // Draw the right island
-  x = WINDOW_WIDTH - ISLAND_X_OFFSET;
-  glBegin(GL_LINE_STRIP);
-  for (const darena::IslandPoint& point : right_island->heightmap) {
-    int y = ISLAND_Y_OFFSET + point.height;
-    glVertex2i(x, y);
-    x -= ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
-  }
-  glEnd();
-}
-
 bool Engine::initialize() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     darena::log << "SDL_Init Error: " << SDL_GetError() << "\n";
@@ -201,7 +150,7 @@ bool Engine::render() {
       break;
     }
     case CONNECTED: {
-      draw_islands();
+      game->draw_islands();
       break;
     }
     case DISCONNECTED: {
@@ -240,7 +189,6 @@ bool Engine::run() {
   }
 
   game_running = true;
-  setup_game();
 
   bool show_demo_window = true;
 

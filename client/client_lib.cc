@@ -30,11 +30,26 @@ bool TCPClient::initialize() {
 }
 
 bool TCPClient::send_connection_request() {
-  int len = username.length();
-  const char* username_cc = username.c_str();
-  int result = SDLNet_TCP_Send(client_communication_socket, username_cc, len);
-  if (result < len) {
-    darena::log << "SDLNet_TCP_Send Error: " << SDLNet_GetError() << "\n";
+  std::string id = "conn_req";
+  darena::TCPMessage message{id, username};
+  msgpack::sbuffer buffer;
+  msgpack::pack(buffer, message);
+
+  uint32_t message_size = htonl(buffer.size());
+  int result = SDLNet_TCP_Send(client_communication_socket, &message_size,
+                               sizeof(message_size));
+  if (result < sizeof(message_size)) {
+    darena::log << "SDLNet_TCP_Send Error, len=" << result
+                << "\nError: " << SDLNet_GetError() << "\n";
+    return false;
+  }
+  darena::log << "Sent message length to server\n";
+
+  result = SDLNet_TCP_Send(client_communication_socket, buffer.data(),
+                           buffer.size());
+  if (result < buffer.size()) {
+    darena::log << "SDLNet_TCP_Send Error, len=" << result
+                << "\nError: " << SDLNet_GetError() << "\n";
     return false;
   }
   darena::log << "Sent message to server.\n";

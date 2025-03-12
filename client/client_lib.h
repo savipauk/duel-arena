@@ -18,6 +18,7 @@
 
 namespace darena {
 
+// TODO: Move to own file
 // Defines the island position and height map.
 struct Island {
   std::unique_ptr<darena::Position> position;
