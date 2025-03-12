@@ -1,11 +1,10 @@
 #include "game.h"
+
 #include "client_lib.h"
 
 namespace darena {
 
 bool Game::connect_to_server() {
-  // const char* server_ip = "127.0.0.1";
-  // const char* message = "Hello Server";
   bool noerr;
 
   darena::TCPClient client{server_ip, username};
@@ -20,10 +19,18 @@ bool Game::connect_to_server() {
     return false;
   }
 
-  noerr = client.get_connection_response();
-  if (!noerr) {
+  std::optional<msgpack::object> response = client.get_connection_response();
+  if (!response.has_value()) {
     return false;
   }
+
+  // darena::log << "obj Received: " << obj << "\n";
+  darena::TCPMessage message;
+  response->convert(message);
+
+  darena::log << "id: " << message.id << "\tmsg: " << message.data << "\n";
+
+  // darena::log << "char[1024] Received: " << msg << "\n";
 
   return true;
 }

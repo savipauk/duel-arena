@@ -27,7 +27,6 @@ bool TCPServer::initialize() {
     return false;
   }
 
-
   socket_set = SDLNet_AllocSocketSet(MAX_CLIENTS);
 
   return true;
@@ -95,12 +94,22 @@ bool TCPServer::read_message(int id) {
   return true;
 }
 
-bool TCPServer::send_response(int id) {
-  const char* message = "i will generate the islands for you now";
-  int len = strlen(message);
-  int result = SDLNet_TCP_Send(client_communication_socket[id], message, len);
-  if (result < len) {
-    darena::log << "SDLNet_TCP_Send Error: " << SDLNet_GetError() << "\n";
+bool TCPServer::send_response(int id, msgpack::sbuffer data) {
+  uint32_t message_size = htonl(data.size());
+  int result = SDLNet_TCP_Send(client_communication_socket[id], &message_size, sizeof(message_size));
+  if (result < sizeof(message_size)) {
+    darena::log << "SDLNet_TCP_Send Error, len=" << result
+                << "\nError:" << SDLNet_GetError() << "\n";
+    return false;
+  }
+  darena::log << "Sent message length to client " << std::to_string(id) << ".\n";
+
+  result = SDLNet_TCP_Send(client_communication_socket[id], data.data(),
+                               data.size());
+  if (result < data.size()) {
+    darena::log << "SDLNet_TCP_Send Error, len=" << result
+                << "\nError:" << SDLNet_GetError() << "\n";
+    return false;
   }
   darena::log << "Sent response to client " << std::to_string(id) << ".\n";
 

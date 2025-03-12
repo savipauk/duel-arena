@@ -2,8 +2,6 @@
 
 #include <SDL_net.h>
 
-#include <random>
-
 namespace darena {
 
 std::string Island::to_string() const {
@@ -43,9 +41,14 @@ bool TCPClient::send_connection_request() {
   return true;
 }
 
-bool TCPClient::get_connection_response() {
+std::optional<msgpack::object> TCPClient::get_connection_response() {
   bool socket_ready = false;
   socket_set = SDLNet_AllocSocketSet(1);
+  if (!socket_set) {
+    darena::log << "SDLNet_AllocSocketSet Error: " << SDLNet_GetError() << "\n";
+    return {};
+  }
+
   SDLNet_TCP_AddSocket(socket_set, client_communication_socket);
 
   while (!socket_ready) {
@@ -61,7 +64,7 @@ bool TCPClient::get_connection_response() {
     if (!server_ip_address) {
       darena::log << "SDLNet_TCP_GetPeerAddress Error: " << SDLNet_GetError()
                   << "\n";
-      return false;
+      return {};
     }
 
     darena::log << "Incoming message from "
@@ -70,15 +73,34 @@ bool TCPClient::get_connection_response() {
     socket_ready = true;
   }
 
-  char message[1024];
-  int len = SDLNet_TCP_Recv(client_communication_socket, message, 1024);
+  // Read the message length first
+  uint32_t message_size;
+  int len = SDLNet_TCP_Recv(client_communication_socket, &message_size,
+                            sizeof(message_size));
   if (!len) {
-    darena::log << "SDLNet_TCP_Recv Error: " << SDLNet_GetError() << "\n";
-    return false;
+    darena::log << "SDLNet_TCP_Recv Error, len=" << len
+                << "\nError: " << SDLNet_GetError() << "\n ";
+    return {};
   }
-  darena::log << "Received: \n" << std::string(message, len) << "\n";
+  message_size = ntohl(message_size);
+  darena::log << "Next message size: " << message_size << "\n";
 
-  return true;
+  // Allocate buffer for the message
+  std::vector<char> message(message_size);
+  len = SDLNet_TCP_Recv(client_communication_socket, message.data(),
+                        message_size);
+  if (!len) {
+    darena::log << "SDLNet_TCP_Recv Error, len=" << len
+                << "\nError: " << SDLNet_GetError() << "\n ";
+    return {};
+  }
+  darena::log << "Received a message from the server.\n";
+
+  msgpack::unpacked result;
+  msgpack::unpack(result, message.data(), message_size);
+  msgpack::object obj = result.get();
+
+  return obj;
 }
 
 void TCPClient::cleanup() {
@@ -86,32 +108,6 @@ void TCPClient::cleanup() {
   SDLNet_FreeSocketSet(socket_set);
   SDLNet_TCP_Close(client_communication_socket);
   SDLNet_Quit();
-}
-
-// Used to randomly generate numbers in create_heightmap()
-std::random_device rd;
-std::mt19937 gen(rd());
-std::uniform_real_distribution<> dis(0.0, 1.0);
-
-// TODO: Move this function to the server. The server should generate the height
-// maps and send them to the clients
-std::vector<darena::IslandPoint> create_heightmap(int num_of_points) {
-  std::vector<darena::IslandPoint> output = {};
-
-  int last_height = 50 + (dis(gen) - 0.5) * 50;
-  for (int i = 0; i < num_of_points; i++) {
-    last_height += (dis(gen) - 0.5) * 10;
-
-    if (last_height < 25) {
-      last_height = 25;
-    } else if (last_height > 75) {
-      last_height = 75;
-    }
-
-    output.emplace_back(last_height);
-  }
-
-  return output;
 }
 
 }  // namespace darena

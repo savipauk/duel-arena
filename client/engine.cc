@@ -20,22 +20,23 @@ void setup_game() {
 
   left_island = std::make_unique<darena::Island>();
   right_island = std::make_unique<darena::Island>();
-  darena::Position left_island_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
-  left_island->position =
-      std::make_unique<darena::Position>(left_island_position);
 
-  darena::Position right_island_position{
-      WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
-  right_island->position =
-      std::make_unique<darena::Position>(right_island_position);
-
-  std::vector<darena::IslandPoint> left_heightmap =
-      darena::create_heightmap(ISLAND_NUM_OF_POINTS);
-  left_island->heightmap = left_heightmap;
-
-  std::vector<darena::IslandPoint> right_heightmap =
-      darena::create_heightmap(ISLAND_NUM_OF_POINTS);
-  right_island->heightmap = right_heightmap;
+  // darena::Position left_island_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
+  // left_island->position =
+  //     std::make_unique<darena::Position>(left_island_position);
+  //
+  // darena::Position right_island_position{
+  //     WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
+  // right_island->position =
+  //     std::make_unique<darena::Position>(right_island_position);
+  //
+  // std::vector<darena::IslandPoint> left_heightmap =
+  //     darena::create_heightmap(ISLAND_NUM_OF_POINTS);
+  // left_island->heightmap = left_heightmap;
+  //
+  // std::vector<darena::IslandPoint> right_heightmap =
+  //     darena::create_heightmap(ISLAND_NUM_OF_POINTS);
+  // right_island->heightmap = right_heightmap;
 }
 
 void draw_islands() {
@@ -237,8 +238,10 @@ bool Engine::run() {
   if (!noerr) {
     return false;
   }
+
   game_running = true;
   setup_game();
+
   bool show_demo_window = true;
 
   while (game_running) {

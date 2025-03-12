@@ -59,21 +59,24 @@ add_library(ClientLib STATIC
 ) 
 target_compile_definitions(ClientLib PRIVATE CLIENT) # This defines the CLIENT prefix in the logs
 target_include_directories(ClientLib PUBLIC client)
-target_link_libraries(ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui)
+target_link_libraries(ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui msgpack-cxx)
 
 # Server libraries
-add_library(ServerLib STATIC server/server_lib.cc) 
+add_library(ServerLib STATIC 
+  server/server_lib.cc
+  server/game_master.cc
+  ) 
 target_compile_definitions(ServerLib PRIVATE SERVER) # This defines the SERVER prefix in the logs
 target_include_directories(ServerLib PUBLIC server)
-target_link_libraries(ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net)
+target_link_libraries(ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net msgpack-cxx)
 
 # Client executable
 add_executable(DuelArenaClient client/main.cc)
 target_compile_definitions(DuelArenaClient PRIVATE CLIENT) # This defines the CLIENT prefix in the logs
-target_link_libraries(DuelArenaClient ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui)
+target_link_libraries(DuelArenaClient ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui msgpack-cxx)
 
 # Server executable
 add_executable(DuelArenaServer server/main.cc)
 target_compile_definitions(DuelArenaServer PRIVATE SERVER) # This defines the SERVER prefix in the logs
-target_link_libraries(DuelArenaServer ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net)
+target_link_libraries(DuelArenaServer ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net msgpack-cxx)
 

@@ -1,13 +1,16 @@
 #include <SDL_net.h>
 
-#include "server_lib.h"
 #include "common.h"
+#include "game_master.h"
+#include "server_lib.h"
 
 bool game_running = false;
 TCPsocket server_listening_socket, client_communication_socket[MAX_CLIENTS];
 int client_id = 0;
 
 int main() {
+  darena::GameMaster game_master{};
+
   darena::log << "Starting server...\n";
 
   darena::TCPServer server{};
@@ -30,8 +33,21 @@ int main() {
   if (!noerr) {
     return 1;
   }
-  
-  noerr = server.send_response(client_id);
+
+  msgpack::sbuffer buffer;
+
+  std::vector<darena::IslandPoint> left_island_heightmap =
+      game_master.generate_heightmap(ISLAND_NUM_OF_POINTS);
+  std::vector<darena::IslandPoint> right_island_heightmap =
+      game_master.generate_heightmap(ISLAND_NUM_OF_POINTS);
+
+  std::string msg = "i will generate the islands for you now";
+  std::string id = "notice";
+  darena::TCPMessage message{id, msg};
+
+  msgpack::pack(buffer, message);
+
+  noerr = server.send_response(client_id, std::move(buffer));
   if (!noerr) {
     return 1;
   }

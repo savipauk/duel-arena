@@ -1,22 +1,18 @@
 #pragma once
 
 #include <SDL_net.h>
+#include <msgpack/sbuffer.h>
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "common.h"
+#include "msgpack.hpp"
 
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 540
 #define FONT_SIZE 16
-
-#define ISLAND_X_OFFSET 80
-#define ISLAND_Y_OFFSET 320
-#define ISLAND_HEIGHT 100
-#define ISLAND_WIDTH 320
-#define ISLAND_POINT_EVERY 8
-#define ISLAND_NUM_OF_POINTS (ISLAND_WIDTH / ISLAND_POINT_EVERY)
 
 #define TARGET_FPS 60
 
@@ -54,7 +50,7 @@ struct TCPClient {
 
   bool initialize();
   bool send_connection_request();
-  bool get_connection_response();
+  std::optional<msgpack::object> get_connection_response();
   void cleanup();
 
   std::vector<darena::IslandPoint> convert_data_to_island_point();
