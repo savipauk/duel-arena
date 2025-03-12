@@ -95,8 +95,8 @@ std::uniform_real_distribution<> dis(0.0, 1.0);
 
 // TODO: Move this function to the server. The server should generate the height
 // maps and send them to the clients
-std::vector<IslandPoint> create_heightmap(int num_of_points) {
-  std::vector<IslandPoint> output = {};
+std::vector<darena::IslandPoint> create_heightmap(int num_of_points) {
+  std::vector<darena::IslandPoint> output = {};
 
   int last_height = 50 + (dis(gen) - 0.5) * 50;
   for (int i = 0; i < num_of_points; i++) {

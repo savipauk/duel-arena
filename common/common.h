@@ -3,6 +3,8 @@
 #include <SDL_net.h>
 #include <iostream>
 
+#include "msgpack.hpp"
+
 #define DARENA_PORT 50325
 #define DARENA_MAX_MESSAGE_LENGTH 1024
 #define DARENA_CONNECTION_AWAIT 250
@@ -28,7 +30,7 @@ class Logger {
   }
 #else
   std::ostream& operator<<(const std::string& message) {
-    return std::cout << message;
+    return std::cout << "NO-DEFINE: " << message;
   }
   std::ostream& operator<<(const char* message) {
     return std::cout << "NO-DEFINE: " << message;

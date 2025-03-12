@@ -13,6 +13,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_net REQUIRED)
 
+# Get rid of the Boost warning
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+
+# Find msgpack-c
+find_package(msgpack-cxx REQUIRED)
+
 # ImGui
 add_library(ImGui STATIC
     third_party/imgui/imgui.cpp
@@ -39,10 +47,9 @@ target_link_libraries(ImGui PUBLIC SDL2::SDL2 OpenGL::GL)
 # Internal libraries
 # Shared by client & server
 add_library(CommonLib STATIC common/common.cc) 
-# This defines the SERVER prefix in the logs
-target_compile_definitions(CommonLib PRIVATE COMMON)
+target_compile_definitions(CommonLib PRIVATE COMMON) # This defines the COMMON prefix in the logs
 target_include_directories(CommonLib PUBLIC common)
-target_link_libraries(CommonLib PUBLIC SDL2::SDL2 SDL2_net::SDL2_net)
+target_link_libraries(CommonLib PUBLIC SDL2::SDL2 SDL2_net::SDL2_net msgpack-cxx)
 
 # Client libraries
 add_library(ClientLib STATIC 
@@ -50,28 +57,23 @@ add_library(ClientLib STATIC
   client/engine.cc
   client/game.cc
 ) 
-# This defines the CLIENT prefix in the logs
-target_compile_definitions(ClientLib PRIVATE CLIENT)
+target_compile_definitions(ClientLib PRIVATE CLIENT) # This defines the CLIENT prefix in the logs
 target_include_directories(ClientLib PUBLIC client)
 target_link_libraries(ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui)
 
 # Server libraries
 add_library(ServerLib STATIC server/server_lib.cc) 
-# This defines the SERVER prefix in the logs
-target_compile_definitions(ServerLib PRIVATE SERVER)
+target_compile_definitions(ServerLib PRIVATE SERVER) # This defines the SERVER prefix in the logs
 target_include_directories(ServerLib PUBLIC server)
-target_link_libraries(ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net) 
+target_link_libraries(ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net)
 
 # Client executable
 add_executable(DuelArenaClient client/main.cc)
-# This defines the CLIENT prefix in the logs
-target_compile_definitions(DuelArenaClient PRIVATE CLIENT)
-target_link_libraries(DuelArenaClient ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui) 
+target_compile_definitions(DuelArenaClient PRIVATE CLIENT) # This defines the CLIENT prefix in the logs
+target_link_libraries(DuelArenaClient ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui)
 
 # Server executable
 add_executable(DuelArenaServer server/main.cc)
-# This defines the SERVER prefix in the logs
-target_compile_definitions(DuelArenaServer PRIVATE SERVER)
+target_compile_definitions(DuelArenaServer PRIVATE SERVER) # This defines the SERVER prefix in the logs
 target_link_libraries(DuelArenaServer ServerLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net)
-
 

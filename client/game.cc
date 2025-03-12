@@ -4,6 +4,8 @@
 namespace darena {
 
 bool Game::connect_to_server() {
+  // const char* server_ip = "127.0.0.1";
+  // const char* message = "Hello Server";
   bool noerr;
 
   darena::TCPClient client{server_ip, username};

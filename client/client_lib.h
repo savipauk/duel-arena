@@ -25,11 +25,11 @@ namespace darena {
 // Defines the island position and height map.
 struct Island {
   std::unique_ptr<darena::Position> position;
-  std::vector<IslandPoint> heightmap;
+  std::vector<darena::IslandPoint> heightmap;
 
   Island() {}
   Island(std::unique_ptr<darena::Position> position,
-         std::vector<IslandPoint> heightmap)
+         std::vector<darena::IslandPoint> heightmap)
       : position(std::move(position)), heightmap(heightmap) {}
 
   std::string to_string() const;
@@ -56,8 +56,10 @@ struct TCPClient {
   bool send_connection_request();
   bool get_connection_response();
   void cleanup();
+
+  std::vector<darena::IslandPoint> convert_data_to_island_point();
 };
 
-std::vector<IslandPoint> create_heightmap(int num_of_points);
+std::vector<darena::IslandPoint> create_heightmap(int num_of_points);
 
 }  // namespace darena
