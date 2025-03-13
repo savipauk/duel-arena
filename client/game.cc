@@ -6,15 +6,21 @@
 
 namespace darena {
 
+void Game::set_state(std::unique_ptr<GameState> new_state) {
+  state = std::move(new_state);
+}
+
 bool Game::connect_to_server() {
   bool noerr;
+
+  darena::log << "Connecting to server " << server_ip << " with username " << username << "\n";
+  client.username = username;
+  client.server_ip_string = server_ip;
 
   noerr = client.initialize();
   if (!noerr) {
     return false;
   }
-
-  client.username = username;
 
   noerr = client.send_connection_request();
   if (!noerr) {

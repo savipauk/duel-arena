@@ -5,10 +5,10 @@
 
 #include "client_lib.h"
 #include "common.h"
+#include "game_state.h"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl2.h"
-#include "imgui_stdlib.h"
 
 namespace darena {
 
@@ -66,6 +66,7 @@ void Engine::process_input() {
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
     ImGui_ImplSDL2_ProcessEvent(&e);
+    game->state->process_input(game.get(), &e);
     switch (e.type) {
       case SDL_QUIT:
         game_running = false;
@@ -77,22 +78,6 @@ void Engine::process_input() {
   }
 }
 
-void Engine::job_connect_to_server() {
-  bool successfully_connected = game->connect_to_server();
-  if (successfully_connected) {
-    thread_running = false;
-    game->connection = WAIT_FOR_ISLAND_DATA;
-  }
-}
-
-void Engine::job_get_island_data() {
-  bool successfully_connected = game->get_island_data();
-  if (successfully_connected) {
-    thread_running = false;
-    game->connection = CONNECTED;
-  }
-}
-
 void Engine::update() {
   // Calculate delta time
   float delta_time = (SDL_GetTicks64() - last_frame_time) / 1000.0;
@@ -101,39 +86,7 @@ void Engine::update() {
   // delta_time << "\n";
 
   // Rest of the update function
-  switch (game->connection) {
-    case INITIAL: {
-      break;
-    }
-    case CONNECTING: {
-      if (!thread_running) {
-        darena::log << "Thread running.\n";
-        network_thread = std::thread(&Engine::job_connect_to_server, this);
-        network_thread.detach();
-        thread_running = true;
-      }
-      break;
-    }
-    case WAIT_FOR_ISLAND_DATA: {
-      if (!thread_running) {
-        darena::log << "Thread running.\n";
-        network_thread = std::thread(&Engine::job_get_island_data, this);
-        network_thread.detach();
-        thread_running = true;
-      }
-      break;
-    }
-    case CONNECTED: {
-      break;
-    }
-    case DISCONNECTED: {
-      break;
-    }
-    default: {
-      // Nothing
-    }
-  }
-
+  game->state->update(game.get(), delta_time);
   // darena::log << "Connection: " << std::to_string(game->connection) << "\n";
 }
 
@@ -149,49 +102,7 @@ bool Engine::render() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  switch (game->connection) {
-    case INITIAL: {
-      // Render username control in the middle
-      ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
-      ImVec2 window_pos =
-          ImVec2(viewport_size.x * 0.5f, viewport_size.y * 0.5f);
-      ImVec2 window_size = ImVec2(WINDOW_WIDTH * 0.35f, WINDOW_HEIGHT * 0.25f);
-      ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-      ImGui::SetNextWindowSize(window_size);
-
-      ImGui::Begin("INPUT", nullptr,
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-
-      ImGui::InputText("Username", &game->username);
-      ImGui::InputText("Server IP", &game->server_ip);
-      bool button = ImGui::Button("Connect");
-
-      if (button) {
-        game->connection = CONNECTING;
-      }
-
-      ImGui::End();
-      break;
-    }
-    case CONNECTING: {
-      ImGui::Text("CONNECTING");
-      break;
-    }
-    case WAIT_FOR_ISLAND_DATA: {
-      ImGui::Text("WAITING FOR GAME TO START");
-      break;
-    }
-    case CONNECTED: {
-      game->draw_islands();
-      break;
-    }
-    case DISCONNECTED: {
-      break;
-    }
-    default: {
-      // Nothing
-    }
-  }
+  game->state->render(game.get());
 
   // Error checking
   // TODO: Consider returning here
@@ -223,6 +134,9 @@ bool Engine::run() {
   game_running = true;
 
   bool show_demo_window = true;
+
+  game->username = "Player";
+  game->server_ip = "127.0.0.1";
 
   while (game_running) {
     process_input();

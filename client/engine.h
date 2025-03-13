@@ -3,7 +3,6 @@
 #include <SDL.h>
 
 #include <memory>
-#include <thread>
 
 #include "game.h"
 
@@ -16,8 +15,6 @@ struct Engine {
   bool game_running;
   uint64_t last_frame_time;
   float fps;
-  std::thread network_thread;
-  std::atomic_bool thread_running;
 
   Engine()
       : window(nullptr),
@@ -25,8 +22,7 @@ struct Engine {
         game(std::make_unique<Game>()),
         game_running(false),
         last_frame_time(SDL_GetTicks64()),
-        fps(0),
-        thread_running(false) {}
+        fps(0) {}
 
   // Initializes the SDL window and renderer
   bool initialize();
@@ -56,5 +52,7 @@ struct Engine {
   // Get island data
   void job_get_island_data();
 };
+
+
 
 }  // namespace darena
