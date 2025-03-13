@@ -1,4 +1,5 @@
 #include "game.h"
+
 #include <SDL_opengl.h>
 
 #include "client_lib.h"
@@ -7,8 +8,6 @@ namespace darena {
 
 bool Game::connect_to_server() {
   bool noerr;
-
-  darena::TCPClient client{server_ip, username};
 
   noerr = client.initialize();
   if (!noerr) {
@@ -20,6 +19,10 @@ bool Game::connect_to_server() {
     return false;
   }
 
+  return true;
+}
+
+bool Game::get_island_data() {
   std::optional<msgpack::object> response = client.get_connection_response();
   if (!response.has_value()) {
     return false;

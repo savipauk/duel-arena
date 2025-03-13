@@ -3,6 +3,7 @@
 #include <SDL.h>
 
 #include <memory>
+#include <thread>
 
 #include "game.h"
 
@@ -15,6 +16,7 @@ struct Engine {
   bool game_running;
   uint64_t last_frame_time;
   float fps;
+  std::thread network_thread;
 
   Engine()
       : window(nullptr),
@@ -45,6 +47,12 @@ struct Engine {
 
   // Cleanup function that destroys the window and renderer
   void cleanup();
+
+  // Connect to server
+  void job_connect_to_server();
+
+  // Get island data 
+  void job_get_island_data();
 };
 
 }  // namespace darena

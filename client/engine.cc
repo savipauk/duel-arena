@@ -77,6 +77,20 @@ void Engine::process_input() {
   }
 }
 
+void Engine::job_connect_to_server() {
+  bool successfully_connected = game->connect_to_server();
+  if (successfully_connected) {
+    game->connection = WAIT_FOR_ISLAND_DATA;
+  }
+}
+
+void Engine::job_get_island_data() {
+  bool successfully_connected = game->get_island_data();
+  if (successfully_connected) {
+    game->connection = CONNECTED;
+  }
+}
+
 void Engine::update() {
   // Calculate delta time
   float delta_time = (SDL_GetTicks64() - last_frame_time) / 1000.0;
@@ -90,10 +104,11 @@ void Engine::update() {
       break;
     }
     case CONNECTING: {
-      bool successfully_connected = game->connect_to_server();
-      if (successfully_connected) {
-        game->connection = CONNECTED;
-      }
+      network_thread = std::thread(&Engine::job_connect_to_server, this);
+      break;
+    }
+    case WAIT_FOR_ISLAND_DATA: {
+      network_thread = std::thread(&Engine::job_get_island_data, this);
       break;
     }
     case CONNECTED: {
@@ -147,6 +162,14 @@ bool Engine::render() {
       break;
     }
     case CONNECTING: {
+      ImGui::Begin("", nullptr,
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+      ImGui::Text("CONNECTING");
+      ImGui::End();
+      break;
+    }
+    case WAIT_FOR_ISLAND_DATA: {
+      ImGui::Text("WAITING FOR ISLAND DATA");
       break;
     }
     case CONNECTED: {

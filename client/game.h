@@ -7,16 +7,27 @@
 
 namespace darena {
 
-enum Connection { INITIAL, CONNECTING, CONNECTED, DISCONNECTED };
+enum GameState {
+  INITIAL,
+  CONNECTING,
+  WAIT_FOR_ISLAND_DATA,
+  CONNECTED,
+  DISCONNECTED
+};
 
 struct Game {
   std::string username;
   std::string server_ip;
   std::unique_ptr<darena::Island> left_island;
   std::unique_ptr<darena::Island> right_island;
-  Connection connection;
+  darena::TCPClient client;
+  GameState connection;
 
-  Game() : username("Player"), server_ip("127.0.0.1"), connection(INITIAL) {
+  Game()
+      : username("Player"),
+        server_ip("127.0.0.1"),
+        connection(INITIAL),
+        client(darena::TCPClient{server_ip, username}) {
     left_island = std::make_unique<darena::Island>();
     right_island = std::make_unique<darena::Island>();
 
@@ -33,6 +44,10 @@ struct Game {
   // Connects to the server
   bool connect_to_server();
 
+  // Waits for the server to send island data
+  bool get_island_data();
+
+  // OpenGL draw calls for the island
   void draw_islands();
 };
 
