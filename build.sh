@@ -13,7 +13,7 @@ fi
 
 cmake --build .
 
-# Generate symlink to out/compile_command.json if doing `./build.sh --link`
+# Generate symlink to out/compile_command.json
 if [ -e compile_commands.json ]; then
   echo "Link already exists. Skipping ln -s out/compile_commands.json compile_commands.json"
 else
