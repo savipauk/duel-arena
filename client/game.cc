@@ -25,14 +25,10 @@ bool Game::connect_to_server() {
     return false;
   }
 
-  // darena::TCPMessage message;
-  // response->convert(message);
-  // darena::log << "id: " << message.id << "\tmsg: " << message.data << "\n";
-
-  response->convert(left_island->heightmap);
-  for (const darena::IslandPoint point : left_island->heightmap) {
-    darena::log << point.to_string() << "\n";
-  }
+  std::vector<std::vector<darena::IslandPoint>> heightmaps;
+  response->convert(heightmaps);
+  left_island->heightmap = heightmaps[0];
+  right_island->heightmap = heightmaps[1];
 
   return true;
 }

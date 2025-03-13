@@ -41,11 +41,10 @@ int main() {
   std::vector<darena::IslandPoint> right_island_heightmap =
       game_master.generate_heightmap(ISLAND_NUM_OF_POINTS);
 
-  // std::string msg = "i will generate the islands for you now";
-  // std::string id = "notice";
-  // darena::TCPMessage message{id, msg};
-
-  msgpack::pack(buffer, left_island_heightmap);
+  msgpack::packer<msgpack::sbuffer> packer(&buffer);
+  packer.pack_array(2);
+  packer.pack(left_island_heightmap);
+  packer.pack(right_island_heightmap);
 
   noerr = server.send_response(client_id, std::move(buffer));
   if (!noerr) {
