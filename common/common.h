@@ -91,8 +91,8 @@ struct IslandPoint {
   int height;
   int strength = 1;
 
-  IslandPoint() {}
-  IslandPoint(int height) : height(height), strength(1) {} // TODO: Remove this
+  IslandPoint() : height(0), strength(1) {}
+  IslandPoint(int height) : height(height), strength(1) {}  // TODO: Remove this
   IslandPoint(int height, int strength) : height(height), strength(strength) {}
 
   std::string to_string() const;

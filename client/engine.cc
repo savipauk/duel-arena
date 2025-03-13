@@ -80,6 +80,7 @@ void Engine::process_input() {
 void Engine::job_connect_to_server() {
   bool successfully_connected = game->connect_to_server();
   if (successfully_connected) {
+    thread_running = false;
     game->connection = WAIT_FOR_ISLAND_DATA;
   }
 }
@@ -87,6 +88,7 @@ void Engine::job_connect_to_server() {
 void Engine::job_get_island_data() {
   bool successfully_connected = game->get_island_data();
   if (successfully_connected) {
+    thread_running = false;
     game->connection = CONNECTED;
   }
 }
@@ -104,11 +106,21 @@ void Engine::update() {
       break;
     }
     case CONNECTING: {
-      network_thread = std::thread(&Engine::job_connect_to_server, this);
+      if (!thread_running) {
+        darena::log << "Thread running.\n";
+        network_thread = std::thread(&Engine::job_connect_to_server, this);
+        network_thread.detach();
+        thread_running = true;
+      }
       break;
     }
     case WAIT_FOR_ISLAND_DATA: {
-      network_thread = std::thread(&Engine::job_get_island_data, this);
+      if (!thread_running) {
+        darena::log << "Thread running.\n";
+        network_thread = std::thread(&Engine::job_get_island_data, this);
+        network_thread.detach();
+        thread_running = true;
+      }
       break;
     }
     case CONNECTED: {
@@ -122,7 +134,7 @@ void Engine::update() {
     }
   }
 
-  darena::log << "Connection: " << std::to_string(game->connection) << "\n";
+  // darena::log << "Connection: " << std::to_string(game->connection) << "\n";
 }
 
 bool Engine::render() {
@@ -162,14 +174,11 @@ bool Engine::render() {
       break;
     }
     case CONNECTING: {
-      ImGui::Begin("", nullptr,
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
       ImGui::Text("CONNECTING");
-      ImGui::End();
       break;
     }
     case WAIT_FOR_ISLAND_DATA: {
-      ImGui::Text("WAITING FOR ISLAND DATA");
+      ImGui::Text("WAITING FOR GAME TO START");
       break;
     }
     case CONNECTED: {
@@ -250,7 +259,6 @@ bool Engine::run() {
     }
   }
 
-  // client.cleanup();
   return true;
 }
 

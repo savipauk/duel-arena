@@ -14,6 +14,8 @@ bool Game::connect_to_server() {
     return false;
   }
 
+  client.username = username;
+
   noerr = client.send_connection_request();
   if (!noerr) {
     return false;
@@ -23,13 +25,19 @@ bool Game::connect_to_server() {
 }
 
 bool Game::get_island_data() {
-  std::optional<msgpack::object> response = client.get_connection_response();
+  bool noerr = client.wait_for_message();
+  if (!noerr) {
+    return false;
+  }
+
+  std::optional<msgpack::unpacked> response = client.get_connection_response();
   if (!response.has_value()) {
     return false;
   }
 
+  msgpack::object obj = response->get();
   std::vector<std::vector<darena::IslandPoint>> heightmaps;
-  response->convert(heightmaps);
+  obj.convert(heightmaps);
   left_island->heightmap = heightmaps[0];
   right_island->heightmap = heightmaps[1];
 

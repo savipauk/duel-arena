@@ -17,6 +17,7 @@ struct Engine {
   uint64_t last_frame_time;
   float fps;
   std::thread network_thread;
+  std::atomic_bool thread_running;
 
   Engine()
       : window(nullptr),
@@ -24,7 +25,8 @@ struct Engine {
         game(std::make_unique<Game>()),
         game_running(false),
         last_frame_time(SDL_GetTicks64()),
-        fps(0) {}
+        fps(0),
+        thread_running(false) {}
 
   // Initializes the SDL window and renderer
   bool initialize();
@@ -51,7 +53,7 @@ struct Engine {
   // Connect to server
   void job_connect_to_server();
 
-  // Get island data 
+  // Get island data
   void job_get_island_data();
 };
 

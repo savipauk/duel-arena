@@ -51,7 +51,8 @@ struct TCPClient {
 
   bool initialize();
   bool send_connection_request();
-  std::optional<msgpack::object> get_connection_response();
+  bool wait_for_message();
+  std::optional<msgpack::unpacked> get_connection_response();
   void cleanup();
 
   std::vector<darena::IslandPoint> convert_data_to_island_point();

@@ -56,12 +56,12 @@ bool TCPClient::send_connection_request() {
   return true;
 }
 
-std::optional<msgpack::object> TCPClient::get_connection_response() {
+bool TCPClient::wait_for_message() {
   bool socket_ready = false;
   socket_set = SDLNet_AllocSocketSet(1);
   if (!socket_set) {
     darena::log << "SDLNet_AllocSocketSet Error: " << SDLNet_GetError() << "\n";
-    return {};
+    return false;
   }
 
   SDLNet_TCP_AddSocket(socket_set, client_communication_socket);
@@ -79,7 +79,7 @@ std::optional<msgpack::object> TCPClient::get_connection_response() {
     if (!server_ip_address) {
       darena::log << "SDLNet_TCP_GetPeerAddress Error: " << SDLNet_GetError()
                   << "\n";
-      return {};
+      return false;
     }
 
     darena::log << "Incoming message from "
@@ -88,6 +88,10 @@ std::optional<msgpack::object> TCPClient::get_connection_response() {
     socket_ready = true;
   }
 
+  return true;
+}
+
+std::optional<msgpack::unpacked> TCPClient::get_connection_response() {
   // Read the message length first
   uint32_t message_size;
   int len = SDLNet_TCP_Recv(client_communication_socket, &message_size,
@@ -113,9 +117,8 @@ std::optional<msgpack::object> TCPClient::get_connection_response() {
 
   msgpack::unpacked result;
   msgpack::unpack(result, message.data(), message_size);
-  msgpack::object obj = result.get();
 
-  return obj;
+  return result;
 }
 
 void TCPClient::cleanup() {
