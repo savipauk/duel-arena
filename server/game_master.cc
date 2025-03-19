@@ -1,7 +1,8 @@
+#include "game_master.h"
+
 #include <random>
 
 #include "common.h"
-#include "game_master.h"
 
 namespace darena {
 
@@ -10,9 +11,8 @@ std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<> dis(0.0, 1.0);
 
-// TODO: Move this function to the server. The server should generate the height
-// maps and send them to the clients
-std::vector<darena::IslandPoint> GameMaster::generate_heightmap(int num_of_points) {
+std::vector<darena::IslandPoint> GameMaster::generate_heightmap(
+    int num_of_points) {
   std::vector<darena::IslandPoint> output = {};
 
   int last_height = 50 + (dis(gen) - 0.5) * 50;

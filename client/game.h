@@ -22,7 +22,7 @@ struct Game {
       : client(server_ip, username),
         left_island(std::make_unique<darena::Island>()),
         right_island(std::make_unique<darena::Island>()) {
-        state = std::make_unique<GSInitial>();
+    state = std::make_unique<GSInitial>();
     left_island->position =
         std::make_unique<darena::Position>(ISLAND_X_OFFSET, ISLAND_Y_OFFSET);
     right_island->position = std::make_unique<darena::Position>(

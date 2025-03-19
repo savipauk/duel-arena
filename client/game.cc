@@ -13,7 +13,8 @@ void Game::set_state(std::unique_ptr<GameState> new_state) {
 bool Game::connect_to_server() {
   bool noerr;
 
-  darena::log << "Connecting to server " << server_ip << " with username " << username << "\n";
+  darena::log << "Connecting to server " << server_ip << " with username "
+              << username << "\n";
   client.username = username;
   client.server_ip_string = server_ip;
 

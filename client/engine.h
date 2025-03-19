@@ -53,6 +53,4 @@ struct Engine {
   void job_get_island_data();
 };
 
-
-
 }  // namespace darena
