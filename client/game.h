@@ -15,12 +15,18 @@ struct Player {
   int width;
   int height;
   int move_speed = 100;
-  float gravity = 0.9f;
-  float curr_y_speed = 0;
+  float gravity = 4.91f;
+  float current_y_speed = 0.0f;
+  float current_x_speed = 0.0f;
+  float max_y_speed = 1000;
+  float deacceleration_x = 500;
   bool falling = false;
+  float angle_rad = 0;
 
   Player(float x, float y, int width, int height)
       : position(x, y), width(width), height(height) {};
+
+  void update(Game *game, float delta_time);
 };
 
 struct Game {

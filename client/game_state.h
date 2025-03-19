@@ -52,7 +52,7 @@ class GSConnected : public GameState {
  private:
   bool generated = false;
   std::unordered_set<SDL_Keycode> keys_pressed;
-  int move = 0;
+  int move_x = 0;
 
  public:
   void process_input(darena::Game* game, SDL_Event* e) override;
