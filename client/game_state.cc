@@ -92,6 +92,14 @@ void GSConnected::process_input(Game* game, SDL_Event* e) {
 
   move_x -= keys_pressed.count(SDLK_LEFT);
   move_x += keys_pressed.count(SDLK_RIGHT);
+
+  if (keys_pressed.count(SDLK_r)) {
+    game->player.position = {100, 100};
+  }
+  if (keys_pressed.count(SDLK_n)) {
+    generated = false;
+    game->player.position = {100, 100};
+  }
 }
 
 bool are_equal(float x1, float x2, float epsilon = 1e-10) {
@@ -120,6 +128,8 @@ void GSConnected::update(Game* game, float delta_time) {
       player->current_y_speed = player->max_y_speed;
     }
     player->position.y += player->current_y_speed;
+  } else {
+    player->current_y_speed = 0;
   }
 
   auto closest_it = game->left_island->heightmap.begin();
@@ -141,8 +151,6 @@ void GSConnected::update(Game* game, float delta_time) {
   if (closest_distance < 0 &&
       closest_it != game->left_island->heightmap.begin()) {
     snd_closest = (*(--closest_it)).position;
-    player->angle_rad =
-        std::atan((snd_closest.y - closest.y) / (snd_closest.x - closest.x));
   } else if (closest_distance > 0 &&
              std::next(closest_it) != game->left_island->heightmap.end()) {
     snd_closest = (*(++closest_it)).position;
@@ -150,26 +158,27 @@ void GSConnected::update(Game* game, float delta_time) {
   // Else closest_distance is 0 (exactly in the middle of a point), or player is
   // falling
 
+  if (player->position.y + player->width / 2.0f < closest.y ||
+      closest_distance > ISLAND_POINT_EVERY / 2.0f) {
+    player->falling = true;
+  } else {
+    player->falling = false;
+  }
+
   float slope = 0.0f;
   if (!are_equal(closest.x, snd_closest.x) && !player->falling) {
     slope = (snd_closest.y - closest.y) / (snd_closest.x - closest.x);
-    player->angle_rad = std::atan(slope);
+    player->angle_rad = std::atan(slope) / 2.0f;
   } else {
     player->angle_rad = 0.0f;
   }
 
   // if (!are_equal(slope, 0.0f)) {
-  if (!player->falling) {
-    // darena::log << closest.to_string() << "\t" << snd_closest.to_string()
-    //             << "\t" << player->position.to_string() << "\tAngle("
-    //             << player->angle_rad << ")\n";
-    player->position.y = closest.y - player->width / 2.0f;
+  if (!player->falling && !are_equal(slope, 0.0f)) {
+    float y_intercept = closest.y - slope * closest.x;
+    float y_point = slope * player->position.x + y_intercept;
+    player->position.y = std::round(y_point) - player->width / 2.0f + 5;
   }
-
-  // darena::log << closest.to_string() << " " << snd_closest.to_string() << " "
-  //             << player->position.to_string() << " " << "Distance("
-  //             << closest_distance << ") Angle(" << player->angle_rad <<
-  //             ")\n";
 
   if (move_x != 0) {
     player->current_x_speed = move_x * player->move_speed;
@@ -186,16 +195,7 @@ void GSConnected::update(Game* game, float delta_time) {
     }
   }
 
-  if (player->position.y + player->width / 2.0f < closest.y ||
-      are_equal(closest_distance, ISLAND_POINT_EVERY)) {
-    player->falling = true;
-  } else {
-    player->falling = false;
-  }
-
   player->position.x += player->current_x_speed * delta_time;
-
-  // player->position.x += move_x * player->move_speed * delta_time;
 }
 
 void GSConnected::render(Game* game) {
@@ -206,16 +206,11 @@ void GSConnected::render(Game* game) {
   game->draw_islands();
 
   Player* player = &game->player;
-  float angle_deg = player->angle_rad * (180.0f / M_PI);
-  // float angle_deg = 0;
-  // darena::log << "rad: " << player->angle_rad << "\tdeg: " << angle_deg <<
-  // "\n";
+  int angle_deg = player->angle_rad * (180.0f / M_PI);
 
   glPushMatrix();
   glTranslatef(player->position.x, player->position.y, 0);
-  // if (!are_equal(angle_deg, 0.0f)) {
   glRotatef(angle_deg, 0, 0, 1);
-  // }
 
   glColor3f(0.3f, 0.5f, 1.0f);
   glBegin(GL_POLYGON);

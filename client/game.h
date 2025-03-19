@@ -21,7 +21,7 @@ struct Player {
   float max_y_speed = 1000;
   float deacceleration_x = 500;
   bool falling = false;
-  float angle_rad = 0;
+  float angle_rad = 0.0f;
 
   Player(float x, float y, int width, int height)
       : position(x, y), width(width), height(height) {};
