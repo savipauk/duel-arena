@@ -3,15 +3,12 @@
 #include <SDL_net.h>
 #include <msgpack/sbuffer.h>
 
-#include <memory>
 #include <optional>
 #include <vector>
 
 #include "common.h"
 #include "msgpack.hpp"
 
-#define WINDOW_WIDTH 960
-#define WINDOW_HEIGHT 540
 #define FONT_SIZE 16
 
 #define TARGET_FPS 60
@@ -21,13 +18,10 @@ namespace darena {
 // TODO: Move to own file
 // Defines the island position and height map.
 struct Island {
-  std::unique_ptr<darena::Position> position;
   std::vector<darena::IslandPoint> heightmap;
 
   Island() {}
-  Island(std::unique_ptr<darena::Position> position,
-         std::vector<darena::IslandPoint> heightmap)
-      : position(std::move(position)), heightmap(heightmap) {}
+  Island(std::vector<darena::IslandPoint> heightmap) : heightmap(heightmap) {}
 
   std::string to_string() const;
 };

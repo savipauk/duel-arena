@@ -5,7 +5,7 @@
 namespace darena {
 
 std::string Island::to_string() const {
-  std::string output = "Island(" + position->to_string();
+  std::string output = "Island("; 
   for (auto it = heightmap.begin(); it != heightmap.end(); it++) {
     output.append(it->to_string());
   }

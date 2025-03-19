@@ -11,7 +11,7 @@ std::string Position::to_string() const {
 }
 
 std::string IslandPoint::to_string() const {
-  return "IslandPoint(" + std::to_string(height) + std::to_string(strength) +
+  return "IslandPoint(" + position.to_string() + std::to_string(strength) +
          ")";
 }
 

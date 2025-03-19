@@ -1,5 +1,9 @@
 #include "game_state.h"
 
+#include <SDL_opengl.h>
+
+#include <random>
+
 #include "game.h"
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
@@ -74,10 +78,69 @@ void GSWaitingForIslandData::render(Game* game) {
   ImGui::Text("WAITING FOR GAME TO START");
 }
 
-void GSConnected::process_input(Game* game, SDL_Event* e) { return; }
+void GSConnected::process_input(Game* game, SDL_Event* e) {
+  move = 0;
 
-void GSConnected::update(Game* game, float delta_time) {}
+  switch (e->type) {
+    case SDL_KEYDOWN: {
+      keys_pressed.insert(e->key.keysym.sym);
+      break;
+    }
+    case SDL_KEYUP: {
+      keys_pressed.erase(e->key.keysym.sym);
+      break;
+    }
+  }
 
-void GSConnected::render(Game* game) { game->draw_islands(); }
+  move -= keys_pressed.count(SDLK_LEFT);
+  move += keys_pressed.count(SDLK_RIGHT);
+}
+
+void GSConnected::update(Game* game, float delta_time) {
+  if (!generated) {
+    Position left_island_starting_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
+    Position right_island_starting_position{
+        WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
+    game->left_island->heightmap =
+        game->generate(left_island_starting_position, ISLAND_NUM_OF_POINTS);
+    game->right_island->heightmap =
+        game->generate(right_island_starting_position, ISLAND_NUM_OF_POINTS);
+    generated = true;
+    return;
+  }
+
+  Player* player = &game->player;
+  player->position.x += move * player->move_speed * delta_time;
+
+  for (const darena::IslandPoint& point : game->left_island->heightmap) {
+  }
+
+  if (player->falling) {
+  }
+}
+
+void GSConnected::render(Game* game) {
+  if (!generated) {
+    return;
+  }
+
+  game->draw_islands();
+
+  Player* player = &game->player;
+
+  glColor3f(0.3f, 0.5f, 1.0f);
+  glBegin(GL_POLYGON);
+
+  glVertex2i(player->position.x - player->width / 2.0,
+             player->position.y + player->height / 2.0);
+  glVertex2i(player->position.x + player->width / 2.0,
+             player->position.y + player->height / 2.0);
+  glVertex2i(player->position.x + player->width / 2.0,
+             player->position.y - player->height / 2.0);
+  glVertex2i(player->position.x - player->width / 2.0,
+             player->position.y - player->height / 2.0);
+
+  glEnd();
+}
 
 }  // namespace darena

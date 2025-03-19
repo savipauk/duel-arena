@@ -24,11 +24,19 @@ int main() {
   bool noerr = true;
 
   darena::log << "Generating heightmaps\n";
+
   // Generate heightmaps
+  darena::Position left_island_starting_position{ISLAND_X_OFFSET,
+                                                 ISLAND_Y_OFFSET};
+  darena::Position right_island_starting_position{
+      WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
+
   std::vector<darena::IslandPoint> left_island_heightmap =
-      game_master.generate_heightmap(ISLAND_NUM_OF_POINTS);
+      game_master.generate_heightmap(left_island_starting_position,
+                                     ISLAND_NUM_OF_POINTS);
   std::vector<darena::IslandPoint> right_island_heightmap =
-      game_master.generate_heightmap(ISLAND_NUM_OF_POINTS);
+      game_master.generate_heightmap(right_island_starting_position,
+                                     ISLAND_NUM_OF_POINTS);
 
   // Stores the buffers containing heightmap information which are sent to the
   // clients

@@ -10,6 +10,19 @@ namespace darena {
 
 class GameState;
 
+struct Player {
+  darena::Position position;
+  int width;
+  int height;
+  int move_speed = 100;
+  float gravity = 0.9f;
+  float curr_y_speed = 0;
+  bool falling = false;
+
+  Player(float x, float y, int width, int height)
+      : position(x, y), width(width), height(height) {};
+};
+
 struct Game {
   std::string username;
   std::string server_ip;
@@ -17,16 +30,14 @@ struct Game {
   std::unique_ptr<darena::Island> right_island;
   darena::TCPClient client;
   std::unique_ptr<darena::GameState> state;
+  Player player;
 
   Game()
       : client(server_ip, username),
         left_island(std::make_unique<darena::Island>()),
-        right_island(std::make_unique<darena::Island>()) {
-    state = std::make_unique<GSInitial>();
-    left_island->position =
-        std::make_unique<darena::Position>(ISLAND_X_OFFSET, ISLAND_Y_OFFSET);
-    right_island->position = std::make_unique<darena::Position>(
-        WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET);
+        right_island(std::make_unique<darena::Island>()),
+        player(100, 100, 25, 25) {
+    state = std::make_unique<GSConnected>();
   }
   // Sets the new state
   void set_state(std::unique_ptr<GameState> new_state);
@@ -39,6 +50,9 @@ struct Game {
 
   // OpenGL draw calls for the island
   void draw_islands();
+
+  // Placeholder function to test functionality
+  std::vector<darena::IslandPoint> generate(const Position& position, int num_of_points);
 };
 
 }  // namespace darena

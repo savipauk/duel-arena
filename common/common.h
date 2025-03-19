@@ -11,11 +11,14 @@
 #define DARENA_CONNECTION_AWAIT 250
 
 #define ISLAND_X_OFFSET 80
-#define ISLAND_Y_OFFSET 320
-#define ISLAND_HEIGHT 100
+#define ISLAND_Y_OFFSET 300
+#define ISLAND_HEIGHT 130
 #define ISLAND_WIDTH 322
 #define ISLAND_POINT_EVERY 7
-#define ISLAND_NUM_OF_POINTS (ISLAND_WIDTH / ISLAND_POINT_EVERY)
+#define ISLAND_NUM_OF_POINTS (ISLAND_WIDTH / (ISLAND_POINT_EVERY * 1.0f))
+
+#define WINDOW_WIDTH 960
+#define WINDOW_HEIGHT 540
 
 namespace darena {
 
@@ -79,25 +82,27 @@ struct Position {
   float y;
 
   Position() {}
-  Position(float x, float y = 0) : x(x), y(y) {}
+  Position(float x, float y) : x(x), y(y) {}
 
   std::string to_string() const;
+
+  MSGPACK_DEFINE(x, y);
 };
 
 // Point on an island with position relative to the island and a height value.
 // Used in the island heightmap.
 // TODO: Add terrain strength attribute randomizer
 struct IslandPoint {
-  int height;
-  int strength = 1;
+  Position position;
+  int strength;
 
-  IslandPoint() : height(0), strength(1) {}
-  IslandPoint(int height) : height(height), strength(1) {}  // TODO: Remove this
-  IslandPoint(int height, int strength) : height(height), strength(strength) {}
+  IslandPoint() : position(0, 0), strength(1) {}
+  IslandPoint(Position position, int strength)
+      : position(position), strength(strength) {}
 
   std::string to_string() const;
 
-  MSGPACK_DEFINE(height, strength);
+  MSGPACK_DEFINE(position, strength);
 };
 
 struct TCPMessage {

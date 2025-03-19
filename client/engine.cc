@@ -71,9 +71,6 @@ void Engine::process_input() {
       case SDL_QUIT:
         game_running = false;
         break;
-      case SDL_KEYDOWN:
-        darena::log << "Pressed a key.\n";
-        break;
     }
   }
 }
