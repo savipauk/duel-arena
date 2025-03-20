@@ -3,7 +3,6 @@
 #include <SDL_events.h>
 
 #include <thread>
-#include <unordered_set>
 
 namespace darena {
 
@@ -51,8 +50,6 @@ class GSWaitingForIslandData : public GameState {
 class GSConnected : public GameState {
  private:
   bool generated = false;
-  std::unordered_set<SDL_Keycode> keys_pressed;
-  int move_x = 0;
 
  public:
   void process_input(darena::Game* game, SDL_Event* e) override;

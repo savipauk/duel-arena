@@ -15,22 +15,9 @@
 
 namespace darena {
 
-// TODO: Move to own file
-// Defines the island position and height map.
-struct Island {
-  std::vector<darena::IslandPoint> heightmap;
-
-  Island() {}
-  Island(std::vector<darena::IslandPoint> heightmap) : heightmap(heightmap) {}
-
-  std::string to_string() const;
-};
-
 // TODO: This should maybe be a class with the network stuff being private
 struct TCPClient {
   std::string server_ip_string;
-  // TODO: This should contain the player name or something similar
-  // TODO: Add serialization
   std::string username;
   IPaddress server_ip;
   TCPsocket client_communication_socket;

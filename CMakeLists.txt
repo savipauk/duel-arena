@@ -57,6 +57,8 @@ add_library(ClientLib STATIC
   client/engine.cc
   client/game.cc
   client/game_state.cc
+  client/player.cc
+  client/island.cc
 ) 
 target_compile_definitions(ClientLib PRIVATE CLIENT) # This defines the CLIENT prefix in the logs
 target_include_directories(ClientLib PUBLIC client)

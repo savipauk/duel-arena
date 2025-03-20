@@ -53,34 +53,54 @@ bool Game::get_island_data() {
   return true;
 }
 
-void Game::draw_islands() {
-  glColor3f(1.0f, 1.0f, 1.0f);
+void Game::process_input(SDL_Event* e) {
+  state->process_input(this, e);
 
-  // Draw the left island
-  glBegin(GL_POLYGON);
-  // Bottom left point first
-  glVertex2i(left_island->heightmap[0].position.x,
-             ISLAND_Y_OFFSET + ISLAND_HEIGHT);
-  for (const darena::IslandPoint& point : left_island->heightmap) {
-    glVertex2i(point.position.x, point.position.y);
+  if (player) {
+    player->process_input(this, e);
   }
-  // Bottom right point last
-  glVertex2i(left_island->heightmap.back().position.x,
-             ISLAND_Y_OFFSET + ISLAND_HEIGHT);
-  glEnd();
 
-  // Draw the right island
-  glBegin(GL_POLYGON);
-  // Bottom left point first
-  glVertex2i(right_island->heightmap[0].position.x,
-             ISLAND_Y_OFFSET + ISLAND_HEIGHT);
-  for (const darena::IslandPoint& point : right_island->heightmap) {
-    glVertex2i(point.position.x, point.position.y);
+  if (left_island) {
+    left_island->process_input(this, e);
   }
-  // Bottom right point last
-  glVertex2i(right_island->heightmap.back().position.x,
-             ISLAND_Y_OFFSET + ISLAND_HEIGHT);
-  glEnd();
+
+  if (right_island) {
+    right_island->process_input(this, e);
+  }
+}
+
+void Game::update(float delta_time) {
+  state->update(this, delta_time);
+
+  if (player) {
+    player->update(this, delta_time);
+  }
+
+  if (left_island) {
+    left_island->update(this, delta_time);
+  }
+
+  if (right_island) {
+    right_island->update(this, delta_time);
+  }
+}
+
+void Game::render() {
+  // Draw order matters!
+
+  if (left_island) {
+    left_island->render(this);
+  }
+
+  if (right_island) {
+    right_island->render(this);
+  }
+
+  if (player) {
+    player->render(this);
+  }
+
+  state->render(this); 
 }
 
 // Used to randomly generate numbers in generate_heightmap()
@@ -88,6 +108,8 @@ std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<> dis(0.0, 1.0);
 
+// IMPORTANT TODO: Shouldn't depend on the starting position. Also need to
+// update drawing functions for the island with this in mind
 std::vector<darena::IslandPoint> Game::generate(
     const Position& starting_position, int num_of_points) {
   std::vector<darena::IslandPoint> output = {};
@@ -113,8 +135,6 @@ std::vector<darena::IslandPoint> Game::generate(
   return output;
 }
 
-void update(Game *game, float delta_time) {
-
-}
+void update(Game* game, float delta_time) {}
 
 }  // namespace darena

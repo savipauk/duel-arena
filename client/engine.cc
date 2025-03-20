@@ -66,7 +66,8 @@ void Engine::process_input() {
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
     ImGui_ImplSDL2_ProcessEvent(&e);
-    game->state->process_input(game.get(), &e);
+    game->process_input(&e);
+    // Player* player = &game->player;
     switch (e.type) {
       case SDL_QUIT:
         game_running = false;
@@ -83,7 +84,7 @@ void Engine::update() {
   // delta_time << "\n";
 
   // Rest of the update function
-  game->state->update(game.get(), delta_time);
+  game->update(delta_time);
   // darena::log << "Connection: " << std::to_string(game->connection) << "\n";
 }
 
@@ -99,7 +100,7 @@ bool Engine::render() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  game->state->render(game.get());
+  game->render();
 
   // Error checking
   // TODO: Consider returning here

@@ -89,6 +89,9 @@ struct Position {
   MSGPACK_DEFINE(x, y);
 };
 
+extern Position left_island_starting_position;
+extern Position right_island_starting_position;
+
 // Point on an island with position relative to the island and a height value.
 // Used in the island heightmap.
 // TODO: Add terrain strength attribute randomizer
@@ -117,6 +120,7 @@ struct TCPMessage {
 
 std::string ipaddress_to_string(IPaddress* address);
 std::string unit32_t_address_to_string(uint32_t address);
+bool are_equal(float x1, float x2, float epsilon = 1e-10);
 
 // Globals
 

@@ -4,15 +4,6 @@
 
 namespace darena {
 
-std::string Island::to_string() const {
-  std::string output = "Island("; 
-  for (auto it = heightmap.begin(); it != heightmap.end(); it++) {
-    output.append(it->to_string());
-  }
-  output.append(")");
-  return output;
-}
-
 bool TCPClient::initialize() {
   const char* server_ip_cc = server_ip_string.c_str();
   if (SDLNet_ResolveHost(&server_ip, server_ip_cc, DARENA_PORT) == -1) {

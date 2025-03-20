@@ -38,6 +38,15 @@ std::string ipaddress_to_string(IPaddress* address) {
   return oss.str();
 }
 
+bool are_equal(float x1, float x2, float epsilon) {
+  return std::fabs(x1 - x2) < epsilon;
+}
+
+
 Logger log;
+
+Position left_island_starting_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
+Position right_island_starting_position{
+    WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
 
 }  // namespace darena
