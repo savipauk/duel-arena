@@ -60,6 +60,7 @@ void GSWaitingForIslandData::job(Game* game) {
   bool successfully_connected = game->get_island_data();
   if (successfully_connected) {
     thread_running = false;
+    game->player = std::make_unique<darena::Player>(100, 100, 25, 25);
     game->set_state(std::make_unique<GSConnected>());
   }
 }
@@ -84,36 +85,14 @@ void GSConnected::process_input(Game* game, SDL_Event* e) {
       }
       if (e->key.keysym.sym == SDLK_n) {
         game->player->position = {100, 100};
-        generated = false;
       }
       break;
     }
   }
 }
 
-void GSConnected::update(Game* game, float delta_time) {
-  if (!generated) {
-    std::vector<darena::IslandPoint> left_heightmap = game->generate(
-        darena::left_island_starting_position, ISLAND_NUM_OF_POINTS);
-    std::vector<darena::IslandPoint> right_heightmap = game->generate(
-        darena::right_island_starting_position, ISLAND_NUM_OF_POINTS);
+void GSConnected::update(Game* game, float delta_time) {}
 
-    game->left_island = std::make_unique<darena::Island>(
-        darena::left_island_starting_position, left_heightmap);
-    game->right_island = std::make_unique<darena::Island>(
-        darena::right_island_starting_position, right_heightmap);
-
-    game->player = std::make_unique<darena::Player>(100, 100, 25, 25);
-
-    generated = true;
-    return;
-  }
-}
-
-void GSConnected::render(Game* game) {
-  if (!generated) {
-    return;
-  }
-}
+void GSConnected::render(Game* game) {}
 
 }  // namespace darena

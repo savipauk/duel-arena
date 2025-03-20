@@ -22,7 +22,7 @@ struct Game {
   std::unique_ptr<darena::Island> right_island;
 
   Game() : client(server_ip, username) {
-    state = std::make_unique<GSConnected>();
+    state = std::make_unique<GSInitial>();
   }
   // Sets the new state
   void set_state(std::unique_ptr<GameState> new_state);

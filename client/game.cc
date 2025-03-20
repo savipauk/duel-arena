@@ -47,8 +47,10 @@ bool Game::get_island_data() {
   msgpack::object obj = response->get();
   std::vector<std::vector<darena::IslandPoint>> heightmaps;
   obj.convert(heightmaps);
-  left_island->heightmap = heightmaps[0];
-  right_island->heightmap = heightmaps[1];
+  left_island = std::make_unique<darena::Island>(left_island_starting_position,
+                                                 heightmaps[0]);
+  right_island = std::make_unique<darena::Island>(
+      right_island_starting_position, heightmaps[1]);
 
   return true;
 }
@@ -100,7 +102,7 @@ void Game::render() {
     player->render(this);
   }
 
-  state->render(this); 
+  state->render(this);
 }
 
 // Used to randomly generate numbers in generate_heightmap()

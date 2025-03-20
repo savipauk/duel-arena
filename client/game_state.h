@@ -48,9 +48,6 @@ class GSWaitingForIslandData : public GameState {
 };
 
 class GSConnected : public GameState {
- private:
-  bool generated = false;
-
  public:
   void process_input(darena::Game* game, SDL_Event* e) override;
   void update(darena::Game* game, float delta_time) override;
