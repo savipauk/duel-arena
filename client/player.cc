@@ -3,6 +3,7 @@
 #include <SDL_opengl.h>
 
 #include "game.h"
+#include "imgui.h"
 
 namespace darena {
 
@@ -25,8 +26,8 @@ void Player::process_input(darena::Game* game, SDL_Event* e) {
   move_x -= keys_pressed.count(SDLK_LEFT);
   move_x += keys_pressed.count(SDLK_RIGHT);
 
-  move_y -= keys_pressed.count(SDLK_UP);
-  move_y += keys_pressed.count(SDLK_DOWN);
+  move_y += keys_pressed.count(SDLK_UP);
+  move_y -= keys_pressed.count(SDLK_DOWN);
 
   // Shooting
   bool change_happened = last_frame_space != keys_pressed.count(SDLK_SPACE);
@@ -122,19 +123,28 @@ void Player::update(darena::Game* game, float delta_time) {
     }
   }
 
-  if (shot_state == IDLE) {
-    position.x += current_x_speed * delta_time;
-    shot_angle += move_y * shot_angle_change_speed * delta_time;
+  switch (shot_state) {
+    case IDLE: {
+      position.x += current_x_speed * delta_time;
+      shot_angle += move_y * shot_angle_change_speed * delta_time;
+      shot_angle = std::clamp(shot_angle, min_shot_angle, max_shot_angle);
+      break;
+    }
+    case CHARGING: {
+      shot_power += move_y * shot_power_change_speed * delta_time;
+      shot_power = std::clamp(shot_power, min_shot_power, max_shot_power);
+      break;
+    }
+    case SHOOT: {
+      break;
+    }
   }
-  if (shot_angle >= max_shot_angle) {
-    shot_angle = max_shot_angle;
-  }
-  if (shot_angle <= min_shot_angle) {
-    shot_angle = min_shot_angle;
-  }
+
+
 }
 
 void Player::render(darena::Game* game) {
+  // Player
   int angle_deg = angle_rad * (180.0f / M_PI);
   Position top_left = {-width / 2.0f, height / 2.0f};
   Position top_right = {width / 2.0f, height / 2.0f};
@@ -156,9 +166,10 @@ void Player::render(darena::Game* game) {
   glEnd();
   glPopMatrix();
 
-  int cannon_angle_deg = (shot_angle - M_PI / 2) * (180.f / M_PI);
-  int cannon_width = width * 1.5;
-  int cannon_height = height / 2.0;
+  // Cannon
+  int cannon_angle_deg = shot_angle * (180.f / M_PI);
+  int cannon_width = width * 1;
+  int cannon_height = height / 2;
   top_left = {-cannon_width / 2.0f, cannon_height / 2.0f};
   top_right = {cannon_width / 2.0f, cannon_height / 2.0f};
   bot_right = {cannon_width / 2.0f, -cannon_height / 2.0f};
@@ -168,7 +179,7 @@ void Player::render(darena::Game* game) {
   // Move to the pivot point (player center)
   glTranslatef(position.x, position.y, 0);
   // Rotate
-  glRotatef(cannon_angle_deg, 0, 0, 1);
+  glRotatef(-cannon_angle_deg, 0, 0, 1);
   // Move it to the intended positiion
   glTranslatef(cannon_width / 2.0, 0, 0);
 
@@ -182,6 +193,57 @@ void Player::render(darena::Game* game) {
 
   glEnd();
   glPopMatrix();
+
+  // Shot power bar
+  int bar_width = width * 2;
+  int bar_height = height / 2;
+  top_left = {-bar_width / 2.0f, bar_height / 2.0f};
+  top_right = {bar_width / 2.0f, bar_height / 2.0f};
+  bot_right = {bar_width / 2.0f, -bar_height / 2.0f};
+  bot_left = {-bar_width / 2.0f, -bar_height / 2.0f};
+
+  glPushMatrix();
+
+  glTranslatef(position.x, position.y - 50, 0);
+  glColor3f(1.0f, 1.0f, 1.0f);
+  glBegin(GL_LINE_LOOP);
+
+  glVertex2f(top_left.x, top_left.y);
+  glVertex2f(top_right.x, top_right.y);
+  glVertex2f(bot_right.x, bot_right.y);
+  glVertex2f(bot_left.x, bot_left.y);
+
+  glEnd();
+  
+  float percentage_filled = shot_power / 100.0;
+  float diff = top_right.x - top_left.x;
+  top_right.x -= diff * (1 - percentage_filled);
+  bot_right.x -= diff * (1 - percentage_filled);
+
+  glBegin(GL_POLYGON);
+
+  glVertex2f(top_left.x, top_left.y);
+  glVertex2f(top_right.x, top_right.y);
+  glVertex2f(bot_right.x, bot_right.y);
+  glVertex2f(bot_left.x, bot_left.y);
+
+  glEnd();
+  glPopMatrix();
+  
+
+  // Shot power text
+  ImGui::SetNextWindowPos(ImVec2(50, 50));
+
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse |
+      ImGuiWindowFlags_NoSavedSettings;
+
+  ImGui::Begin("Overlay", nullptr, window_flags);
+  ImGui::Text("Shot power: %0.f  ",
+              shot_power);  // Two whitespaces because for some reason ImGui
+                            // doesn't size the text box properly
+  ImGui::End();
 }
 
 }  // namespace darena

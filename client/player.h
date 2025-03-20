@@ -29,11 +29,15 @@ class Player {
   bool falling = false;
   float angle_rad = 0.0f;
 
-  float min_shot_angle = 0.0f;
-  float max_shot_angle = M_PI / 2.0f;
   float shot_angle =  M_PI / 4.0f;
   float shot_angle_change_speed = 3;
+  float min_shot_angle = 0.0f;
+  float max_shot_angle = M_PI / 2.0f;
+
   float shot_power = 0.0f;
+  float shot_power_change_speed = 35;
+  float min_shot_power = 0.0f;
+  float max_shot_power = 100;
 
   Player(float x, float y, int width, int height)
       : position(x, y), width(width), height(height) {};
