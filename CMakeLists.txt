@@ -28,8 +28,8 @@ add_library(ImGui STATIC
     third_party/imgui/imgui_draw.cpp
     third_party/imgui/imgui_tables.cpp
     third_party/imgui/imgui_widgets.cpp
-    third_party/imgui/backends/imgui_impl_sdl2.cpp
-    third_party/imgui/backends/imgui_impl_sdlrenderer2.cpp
+    third_party/imgui/backends/imgui_impl_sdl2.cpp # TODO
+    third_party/imgui/backends/imgui_impl_sdlrenderer2.cpp # TODO
     third_party/imgui/backends/imgui_impl_opengl3.cpp
     third_party/imgui/misc/cpp/imgui_stdlib.cpp
 )
@@ -58,6 +58,7 @@ add_library(ClientLib STATIC
   client/game.cc
   client/game_state.cc
   client/player.cc
+  client/enemy.cc
   client/island.cc
 ) 
 target_compile_definitions(ClientLib PRIVATE CLIENT) # This defines the CLIENT prefix in the logs

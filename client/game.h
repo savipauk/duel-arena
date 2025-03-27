@@ -4,6 +4,7 @@
 #include <string>
 
 #include "client_lib.h"
+#include "enemy.h"
 #include "game_state.h"
 #include "island.h"
 #include "player.h"
@@ -13,13 +14,16 @@ namespace darena {
 class GameState;
 
 struct Game {
+  int id;
+  bool my_turn;
   std::string username;
   std::string server_ip;
   darena::TCPClient client;
   std::unique_ptr<darena::GameState> state;
   std::unique_ptr<darena::Player> player;
+  std::unique_ptr<darena::Enemy> enemy;
   std::unique_ptr<darena::Island> left_island;
-  std::unique_ptr<darena::Island> right_island;
+  std::unique_ptr<darena::Island> right_island; 
 
   Game() : client(server_ip, username) {
     state = std::make_unique<GSInitial>();

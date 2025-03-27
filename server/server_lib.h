@@ -4,9 +4,8 @@
 
 #include <array>
 
+#include "common.h"
 #include "msgpack.hpp"
-
-#define MAX_CLIENTS 2
 
 namespace darena {
 

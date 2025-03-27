@@ -21,8 +21,7 @@ bool TCPClient::initialize() {
 }
 
 bool TCPClient::send_connection_request() {
-  std::string id = "conn_req";
-  darena::TCPMessage message{id, username};
+  darena::ClientConnectionRequest message{username};
   msgpack::sbuffer buffer;
   msgpack::pack(buffer, message);
 

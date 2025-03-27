@@ -108,11 +108,10 @@ bool TCPServer::read_message(int id) {
   msgpack::unpack(result, message.data(), message_size);
   msgpack::object obj = result.get();
 
-  darena::TCPMessage tcp_message;
+  darena::ClientConnectionRequest tcp_message;
   obj.convert(tcp_message);
 
-  darena::log << "id: " << tcp_message.id << "\tmsg: " << tcp_message.data
-              << "\n";
+  darena::log << "player_name: " << tcp_message.player_name << "\n";
 
   return true;
 }

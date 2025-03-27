@@ -1,5 +1,7 @@
 #include <SDL_net.h>
 
+#include <array>
+
 #include "common.h"
 #include "game_master.h"
 #include "server_lib.h"
@@ -38,6 +40,9 @@ int main() {
       game_master.generate_heightmap(right_island_starting_position,
                                      ISLAND_NUM_OF_POINTS);
 
+  std::array<std::vector<darena::IslandPoint>, 2> heightmaps = {
+      left_island_heightmap, right_island_heightmap};
+
   // Stores the buffers containing heightmap information which are sent to the
   // clients
   std::vector<msgpack::sbuffer> buffers;
@@ -57,10 +62,12 @@ int main() {
     buffers.emplace_back();
 
     // Pack the heightmaps information in the buffer
+    darena::ServerIDHeightmapsResponse res = {client_id, heightmaps};
     msgpack::packer<msgpack::sbuffer> packer(&buffers[client_id]);
-    packer.pack_array(2);
-    packer.pack(left_island_heightmap);
-    packer.pack(right_island_heightmap);
+    packer.pack(res);
+    // packer.pack_array(2);
+    // packer.pack(left_island_heightmap);
+    // packer.pack(right_island_heightmap);
   }
 
   for (int i = 0; i < client_id; i++) {

@@ -1,57 +1,15 @@
-#include "player.h"
+#include "enemy.h"
 
 #include <SDL_opengl.h>
 
 #include "game.h"
-#include "imgui.h"
 
 namespace darena {
 
-void Player::process_input(darena::Game* game, SDL_Event* e) {
-  bool last_frame_space = keys_pressed.count(SDLK_SPACE);
-  move_x = 0;
-  move_y = 0;
+void Enemy::process_input(darena::Game* game, SDL_Event* e) {}
 
-  switch (e->type) {
-    case SDL_KEYDOWN: {
-      keys_pressed.insert(e->key.keysym.sym);
-      break;
-    }
-    case SDL_KEYUP: {
-      keys_pressed.erase(e->key.keysym.sym);
-      break;
-    }
-  }
-
-  move_x -= keys_pressed.count(SDLK_LEFT);
-  move_x += keys_pressed.count(SDLK_RIGHT);
-
-  move_y += keys_pressed.count(SDLK_UP);
-  move_y -= keys_pressed.count(SDLK_DOWN);
-
-  // Shooting
-  bool change_happened = last_frame_space != keys_pressed.count(SDLK_SPACE);
-  if (keys_pressed.count(SDLK_SPACE) && change_happened) {
-    switch (shot_state) {
-      case IDLE:
-        // Initiated shot
-        shot_state = CHARGING;
-        darena::log << "IDLE -> CHARGING\n";
-        break;
-      case CHARGING:
-        // Decided to shoot
-        shot_state = SHOOT;
-        darena::log << "CHARGING -> SHOOT\n";
-        break;
-      case SHOOT:
-        break;
-    }
-  }
-}
-
-void Player::update(darena::Game* game, float delta_time) {
+void Enemy::update(darena::Game* game, float delta_time) {
   if (falling) {
-    move_x = 0;
     current_y_speed += gravity * delta_time;
     if (current_y_speed >= max_y_speed) {
       current_y_speed = max_y_speed;
@@ -65,8 +23,7 @@ void Player::update(darena::Game* game, float delta_time) {
   float closest_distance =
       ISLAND_POINT_EVERY;  // If >= ISLAND_POINT_EVERY / 2 then the player is
                            // off the island
-  for (auto it = heightmap.begin();
-       it != heightmap.end(); it++) {
+  for (auto it = heightmap.begin(); it != heightmap.end(); it++) {
     Position point = it->position;
     float distance = point.x - position.x;
     if (std::fabs(distance) < std::fabs(closest_distance)) {
@@ -77,11 +34,9 @@ void Player::update(darena::Game* game, float delta_time) {
 
   Position closest = closest_it->position;
   Position snd_closest = closest;
-  if (closest_distance < 0 &&
-      closest_it != heightmap.begin()) {
+  if (closest_distance < 0 && closest_it != heightmap.begin()) {
     snd_closest = (*(--closest_it)).position;
-  } else if (closest_distance > 0 &&
-             std::next(closest_it) != heightmap.end()) {
+  } else if (closest_distance > 0 && std::next(closest_it) != heightmap.end()) {
     snd_closest = (*(++closest_it)).position;
   }
   // Else closest_distance is 0 (exactly in the middle of a point), or player is
@@ -107,41 +62,10 @@ void Player::update(darena::Game* game, float delta_time) {
     float y_point = slope * position.x + y_intercept;
     position.y = std::round(y_point) - width / 2.0f + 5;
   }
-
-  if (move_x != 0) {
-    current_x_speed = move_x * move_speed;
-  } else if (move_x == 0 || falling) {
-    if (are_equal(current_x_speed, 0.0f)) {
-      current_x_speed = 0;
-    } else {
-      int multiplier = 1;
-      if (current_x_speed < 0) {
-        multiplier = -1;
-      }
-      current_x_speed -= multiplier * deacceleration_x * delta_time;
-    }
-  }
-
-  switch (shot_state) {
-    case IDLE: {
-      position.x += current_x_speed * delta_time;
-      shot_angle += move_y * shot_angle_change_speed * delta_time;
-      shot_angle = std::clamp(shot_angle, min_shot_angle, max_shot_angle);
-      break;
-    }
-    case CHARGING: {
-      shot_power += move_y * shot_power_change_speed * delta_time;
-      shot_power = std::clamp(shot_power, min_shot_power, max_shot_power);
-      break;
-    }
-    case SHOOT: {
-      break;
-    }
-  }
 }
 
-void Player::render(darena::Game* game) {
-  // Player
+void Enemy::render(darena::Game* game) {
+  // Enemy
   int angle_deg = angle_rad * (180.0f / M_PI);
   Position top_left = {-width / 2.0f, height / 2.0f};
   Position top_right = {width / 2.0f, height / 2.0f};
@@ -152,7 +76,7 @@ void Player::render(darena::Game* game) {
   glTranslatef(position.x, position.y, 0);
   glRotatef(angle_deg, 0, 0, 1);
 
-  if (game->id == 0) {
+  if (game->id == 1) {
     glColor3f(0.3f, 0.5f, 1.0f);
   } else {
     glColor3f(1.0f, 0.5f, 0.3f);
@@ -175,7 +99,7 @@ void Player::render(darena::Game* game) {
   bot_left = {-cannon_width / 2.0f, -cannon_height / 2.0f};
 
   glPushMatrix();
-  if (game->id == 0) {
+  if (game->id == 1) {
     // Move to the pivot point (player center)
     glTranslatef(position.x, position.y, 0);
     // Rotate
@@ -191,7 +115,7 @@ void Player::render(darena::Game* game) {
     glTranslatef(-cannon_width / 2.0, 0, 0);
   }
 
-  if (game->id == 0) {
+  if (game->id == 1) {
     glColor3f(0.1f, 0.3f, 0.8f);
   } else {
     glColor3f(0.8f, 0.3f, 0.1f);
@@ -241,20 +165,6 @@ void Player::render(darena::Game* game) {
 
   glEnd();
   glPopMatrix();
-
-  // Shot power text
-  ImGui::SetNextWindowPos(ImVec2(50, 50));
-
-  ImGuiWindowFlags window_flags =
-      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
-      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse |
-      ImGuiWindowFlags_NoSavedSettings;
-
-  ImGui::Begin("Overlay", nullptr, window_flags);
-  ImGui::Text("Shot power: %0.f  ",
-              shot_power);  // Two whitespaces because for some reason ImGui
-                            // doesn't size the text box properly
-  ImGui::End();
 }
 
 }  // namespace darena

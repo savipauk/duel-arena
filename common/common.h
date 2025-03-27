@@ -3,6 +3,7 @@
 #include <SDL_net.h>
 
 #include <iostream>
+#include <msgpack/adaptor/define_decl.hpp>
 
 #include "msgpack.hpp"
 
@@ -19,6 +20,8 @@
 
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 540
+
+#define MAX_CLIENTS 2
 
 namespace darena {
 
@@ -108,14 +111,20 @@ struct IslandPoint {
   MSGPACK_DEFINE(position, strength);
 };
 
-struct TCPMessage {
-  std::string id;
-  std::string data;
+struct ClientConnectionRequest {
+  std::string player_name;
 
-  TCPMessage() {}
-  TCPMessage(std::string id, std::string data) : id(id), data(data) {}
+  ClientConnectionRequest() {}
+  ClientConnectionRequest(std::string player_name) : player_name(player_name) {}
 
-  MSGPACK_DEFINE(id, data);
+  MSGPACK_DEFINE(player_name);
+};
+
+struct ServerIDHeightmapsResponse {
+  int client_id;
+  std::array<std::vector<darena::IslandPoint>, MAX_CLIENTS> heightmaps;
+
+  MSGPACK_DEFINE(client_id, heightmaps);
 };
 
 std::string ipaddress_to_string(IPaddress* address);

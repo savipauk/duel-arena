@@ -1,10 +1,10 @@
 #include "game.h"
 
 #include <SDL_opengl.h>
-
 #include <random>
 
 #include "client_lib.h"
+#include "common.h"
 
 namespace darena {
 
@@ -45,12 +45,18 @@ bool Game::get_island_data() {
   }
 
   msgpack::object obj = response->get();
-  std::vector<std::vector<darena::IslandPoint>> heightmaps;
-  obj.convert(heightmaps);
+  darena::ServerIDHeightmapsResponse res;
+  obj.convert(res);
+  id = res.client_id;
+  if (id == 0) {
+    my_turn = true;
+  } else {
+    my_turn = false;
+  }
   left_island = std::make_unique<darena::Island>(left_island_starting_position,
-                                                 heightmaps[0]);
+                                                 res.heightmaps[0]);
   right_island = std::make_unique<darena::Island>(
-      right_island_starting_position, heightmaps[1]);
+      right_island_starting_position, res.heightmaps[1]);
 
   return true;
 }
@@ -60,6 +66,10 @@ void Game::process_input(SDL_Event* e) {
 
   if (player) {
     player->process_input(this, e);
+  }
+
+  if (enemy) {
+    enemy->process_input(this, e);
   }
 
   if (left_island) {
@@ -76,6 +86,10 @@ void Game::update(float delta_time) {
 
   if (player) {
     player->update(this, delta_time);
+  }
+
+  if (enemy) {
+    enemy->update(this, delta_time);
   }
 
   if (left_island) {
@@ -102,16 +116,17 @@ void Game::render() {
     player->render(this);
   }
 
+  if (enemy) {
+    enemy->render(this);
+  }
+
   state->render(this);
 }
 
-// Used to randomly generate numbers in generate_heightmap()
+// PLACEHOLDER FUNCTIONS FOR TESTING
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<> dis(0.0, 1.0);
-
-// IMPORTANT TODO: Shouldn't depend on the starting position. Also need to
-// update drawing functions for the island with this in mind
 std::vector<darena::IslandPoint> Game::generate(
     const Position& starting_position, int num_of_points) {
   std::vector<darena::IslandPoint> output = {};
