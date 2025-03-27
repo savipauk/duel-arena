@@ -1,6 +1,7 @@
 #include "game.h"
 
 #include <SDL_opengl.h>
+
 #include <random>
 
 #include "client_lib.h"
@@ -64,8 +65,10 @@ bool Game::get_island_data() {
 void Game::process_input(SDL_Event* e) {
   state->process_input(this, e);
 
-  if (player) {
-    player->process_input(this, e);
+  if (my_turn) {
+    if (player) {
+      player->process_input(this, e);
+    }
   }
 
   if (enemy) {

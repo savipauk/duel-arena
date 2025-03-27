@@ -23,7 +23,7 @@ class Enemy {
   float deacceleration_x = 500;
 
   float angle_rad = 0.0f;
-  float shot_angle = 0.0f;
+  float shot_angle = M_PI / 4.0f;
   float shot_power = 0.0f;
   bool falling = false;
 
