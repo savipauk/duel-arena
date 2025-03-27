@@ -33,7 +33,9 @@ bool TCPClient::send_connection_request() {
                 << "\nError: " << SDLNet_GetError() << "\n";
     return false;
   }
-  darena::log << "Sent message length to server\n";
+
+  message_size = ntohl(message_size);
+  darena::log << "Sent message length (" << message_size << ") to server\n";
 
   result = SDLNet_TCP_Send(client_communication_socket, buffer.data(),
                            buffer.size());
@@ -109,6 +111,33 @@ std::optional<msgpack::unpacked> TCPClient::get_connection_response() {
   msgpack::unpack(result, message.data(), message_size);
 
   return result;
+}
+
+bool TCPClient::send_turn_data(std::unique_ptr<darena::ClientTurn> turn_data) {
+  msgpack::sbuffer buffer;
+  msgpack::pack(buffer, *turn_data);
+
+  uint32_t message_size = htonl(buffer.size());
+  int result = SDLNet_TCP_Send(client_communication_socket, &message_size,
+                               sizeof(message_size));
+  if (result < sizeof(message_size)) {
+    darena::log << "SDLNet_TCP_Send Error, len=" << result
+                << "\nError: " << SDLNet_GetError() << "\n";
+    return false;
+  }
+
+  message_size = ntohl(message_size);
+  darena::log << "Sent message length (" << message_size << ") to server\n";
+
+  result = SDLNet_TCP_Send(client_communication_socket, buffer.data(),
+                           buffer.size());
+  if (result < buffer.size()) {
+    darena::log << "SDLNet_TCP_Send Error, len=" << result
+                << "\nError: " << SDLNet_GetError() << "\n";
+    return false;
+  }
+  darena::log << "Sent message to server.\n";
+  return true;
 }
 
 void TCPClient::cleanup() {

@@ -31,20 +31,26 @@ void Player::process_input(darena::Game* game, SDL_Event* e) {
 
   // Shooting
   bool change_happened = last_frame_space != keys_pressed.count(SDLK_SPACE);
-  if (keys_pressed.count(SDLK_SPACE) && change_happened) {
-    switch (shot_state) {
-      case IDLE:
+  bool change_shot_state = keys_pressed.count(SDLK_SPACE) && change_happened;
+  switch (shot_state) {
+    case IDLE: {
+      if (change_shot_state) {
         // Initiated shot
         shot_state = CHARGING;
         darena::log << "IDLE -> CHARGING\n";
-        break;
-      case CHARGING:
+      }
+      break;
+    }
+    case CHARGING: {
+      if (change_shot_state) {
         // Decided to shoot
         shot_state = SHOOT;
         darena::log << "CHARGING -> SHOOT\n";
-        break;
-      case SHOOT:
-        break;
+      }
+      break;
+    }
+    case SHOOT: {
+      break;
     }
   }
 }
@@ -65,8 +71,7 @@ void Player::update(darena::Game* game, float delta_time) {
   float closest_distance =
       ISLAND_POINT_EVERY;  // If >= ISLAND_POINT_EVERY / 2 then the player is
                            // off the island
-  for (auto it = heightmap.begin();
-       it != heightmap.end(); it++) {
+  for (auto it = heightmap.begin(); it != heightmap.end(); it++) {
     Position point = it->position;
     float distance = point.x - position.x;
     if (std::fabs(distance) < std::fabs(closest_distance)) {
@@ -77,15 +82,13 @@ void Player::update(darena::Game* game, float delta_time) {
 
   Position closest = closest_it->position;
   Position snd_closest = closest;
-  if (closest_distance < 0 &&
-      closest_it != heightmap.begin()) {
+  if (closest_distance < 0 && closest_it != heightmap.begin()) {
     snd_closest = (*(--closest_it)).position;
-  } else if (closest_distance > 0 &&
-             std::next(closest_it) != heightmap.end()) {
+  } else if (closest_distance > 0 && std::next(closest_it) != heightmap.end()) {
     snd_closest = (*(++closest_it)).position;
   }
-  // Else closest_distance is 0 (exactly in the middle of a point), or player is
-  // falling
+  // Else closest_distance is 0 (exactly in the middle of a point), or player
+  // is falling
 
   if (position.y + width / 2.0f < closest.y ||
       closest_distance > ISLAND_POINT_EVERY / 2.0f) {
@@ -108,6 +111,10 @@ void Player::update(darena::Game* game, float delta_time) {
     position.y = std::round(y_point) - width / 2.0f + 5;
   }
 
+  if (!game->my_turn) {
+    return;
+  }
+
   if (move_x != 0) {
     current_x_speed = move_x * move_speed;
   } else if (move_x == 0 || falling) {
@@ -127,6 +134,14 @@ void Player::update(darena::Game* game, float delta_time) {
       position.x += current_x_speed * delta_time;
       shot_angle += move_y * shot_angle_change_speed * delta_time;
       shot_angle = std::clamp(shot_angle, min_shot_angle, max_shot_angle);
+      if (!falling) {
+        if (move_x != 0) {
+          game->turn_data->movements.emplace_back(move_x);
+        }
+        if (move_y != 0) {
+          game->turn_data->angle_changes.emplace_back(move_y);
+        }
+      }
       break;
     }
     case CHARGING: {
@@ -135,6 +150,9 @@ void Player::update(darena::Game* game, float delta_time) {
       break;
     }
     case SHOOT: {
+      game->turn_data->shot_angle = shot_angle;
+      game->turn_data->shot_power = shot_power;
+      game->end_turn();
       break;
     }
   }

@@ -17,9 +17,10 @@ namespace darena {
 
 // TODO: This should maybe be a class with the network stuff being private
 struct TCPClient {
-  std::string server_ip_string;
-  std::string username;
-  IPaddress server_ip;
+  std::string server_ip_string;  // TODO: This should be passed as an argument
+                                 // in the functon
+  std::string username;          // TODO: This too
+  IPaddress server_ip;           // TODO: This too
   TCPsocket client_communication_socket;
   SDLNet_SocketSet socket_set;
 
@@ -34,6 +35,7 @@ struct TCPClient {
   bool send_connection_request();
   bool wait_for_message();
   std::optional<msgpack::unpacked> get_connection_response();
+  bool send_turn_data(std::unique_ptr<darena::ClientTurn> turn_data);
   void cleanup();
 
   std::vector<darena::IslandPoint> convert_data_to_island_point();

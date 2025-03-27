@@ -62,6 +62,29 @@ bool Game::get_island_data() {
   return true;
 }
 
+void Game::end_turn() {
+  bool noerr;
+  turn_data->id = id;
+
+  std::string movements = "";
+  std::string angles = "";
+  for (int i : turn_data->movements) {
+    movements.append(std::to_string(i));
+    movements.append(" ");
+  }
+  for (int i : turn_data->angle_changes) {
+    angles.append(std::to_string(i));
+    angles.append(" ");
+  }
+
+  darena::log << turn_data->id << "\tMovements: " << movements << "\tAngles: " << angles << "\t"
+              << turn_data->shot_angle << "\t" << turn_data->shot_power << "\n";
+
+  noerr = client.send_turn_data(std::move(turn_data));
+
+  my_turn = false;
+}
+
 void Game::process_input(SDL_Event* e) {
   state->process_input(this, e);
 

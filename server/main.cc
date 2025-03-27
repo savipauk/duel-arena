@@ -65,9 +65,6 @@ int main() {
     darena::ServerIDHeightmapsResponse res = {client_id, heightmaps};
     msgpack::packer<msgpack::sbuffer> packer(&buffers[client_id]);
     packer.pack(res);
-    // packer.pack_array(2);
-    // packer.pack(left_island_heightmap);
-    // packer.pack(right_island_heightmap);
   }
 
   for (int i = 0; i < client_id; i++) {
@@ -77,7 +74,11 @@ int main() {
     }
   }
 
-  while (1) {
+  for (int i = 0; i < client_id; i++) {
+    noerr = server.get_turn_data(i);
+    if (!noerr) {
+      return 1;
+    }
   }
 
   server.cleanup();

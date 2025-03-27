@@ -73,9 +73,13 @@ bool TCPServer::read_message(int id) {
   SDLNet_TCP_AddSocket(socket_set, client_communication_socket[id]);
 
   while (true) {
-    darena::log << "Waiting for message...\n";
+    darena::log << "Waiting for turn data from id " << id << "...\n";
+
     if (!SDLNet_CheckSockets(socket_set, DARENA_CONNECTION_AWAIT)) {
       // Wait for DARENA_CONNECTION_AWAIT ms before checking connection again
+      continue;
+    }
+    if (!SDLNet_SocketReady(client_communication_socket[id])) {
       continue;
     }
     break;
@@ -136,6 +140,68 @@ bool TCPServer::send_response(int id, msgpack::sbuffer data) {
     return false;
   }
   darena::log << "Sent response to client " << std::to_string(id) << ".\n";
+
+  return true;
+}
+
+bool TCPServer::get_turn_data(int id) {
+  while (true) {
+    darena::log << "Waiting for turn data from id " << id << "...\n";
+
+    if (!SDLNet_CheckSockets(socket_set, DARENA_CONNECTION_AWAIT)) {
+      // Wait for DARENA_CONNECTION_AWAIT ms before checking connection again
+      continue;
+    }
+    if (!SDLNet_SocketReady(client_communication_socket[id])) {
+      continue;
+    }
+    break;
+  }
+
+  // Read the message length first
+  uint32_t message_size;
+  int len = SDLNet_TCP_Recv(client_communication_socket[id], &message_size,
+                            sizeof(message_size));
+  if (!len) {
+    darena::log << "SDLNet_TCP_Recv Error, len=" << len
+                << "\nError: " << SDLNet_GetError() << "\n ";
+    return {};
+  }
+  message_size = ntohl(message_size);
+  darena::log << "next message size: " << message_size << "\n";
+
+  // Allocate buffer for the message
+  std::vector<char> message(message_size);
+  len = SDLNet_TCP_Recv(client_communication_socket[id], message.data(),
+                        message_size);
+  if (!len) {
+    darena::log << "SDLNet_Tcp_Recv Error, len=" << len
+                << "\nError: " << SDLNet_GetError() << "\n";
+    return false;
+  }
+  darena::log << "Received message from id: " << id << "\n";
+
+  msgpack::unpacked result;
+  msgpack::unpack(result, message.data(), message_size);
+  msgpack::object obj = result.get();
+
+  darena::ClientTurn turn_data;
+  obj.convert(turn_data);
+
+  std::string movements = "";
+  std::string angles = "";
+  for (int i : turn_data.movements) {
+    movements.append(std::to_string(i));
+    movements.append(" ");
+  }
+  for (int i : turn_data.angle_changes) {
+    angles.append(std::to_string(i));
+    angles.append(" ");
+  }
+
+  darena::log << turn_data.id << "\tMovements: " << movements
+              << "\tAngles: " << angles << "\t" << turn_data.shot_angle << "\t"
+              << turn_data.shot_power << "\n";
 
   return true;
 }
