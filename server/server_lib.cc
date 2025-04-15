@@ -185,26 +185,28 @@ bool TCPServer::get_turn_data(int id) {
   msgpack::unpack(result, message.data(), message_size);
   msgpack::object obj = result.get();
 
-  darena::ClientTurn turn_data;
-  obj.convert(turn_data);
+  turn_data = std::make_unique<darena::ClientTurn>();
+  obj.convert(*turn_data);
 
   std::string movements = "";
   std::string angles = "";
-  for (int i : turn_data.movements) {
+  for (int i : turn_data->movements) {
     movements.append(std::to_string(i));
     movements.append(" ");
   }
-  for (int i : turn_data.angle_changes) {
+  for (int i : turn_data->angle_changes) {
     angles.append(std::to_string(i));
     angles.append(" ");
   }
 
-  darena::log << turn_data.id << "\tMovements: " << movements
-              << "\tAngles: " << angles << "\t" << turn_data.shot_angle << "\t"
-              << turn_data.shot_power << "\n";
+
+  darena::log << turn_data->id << "\tMovements: " << movements
+              << "\tAngles: " << angles << "\t" << turn_data->shot_angle << "\t"
+              << turn_data->shot_power << "\n";
 
   return true;
 }
+
 
 void TCPServer::cleanup() {
   for (int i = 0; i < MAX_CLIENTS; i++) {

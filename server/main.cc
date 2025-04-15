@@ -74,12 +74,29 @@ int main() {
     }
   }
 
-  for (int i = 0; i < client_id; i++) {
-    noerr = server.get_turn_data(i);
+  int id_playing = 0;
+  int id_waiting = 1;
+  while (true) {
+    noerr = server.get_turn_data(id_playing);
     if (!noerr) {
       return 1;
     }
+    msgpack::sbuffer buf;
+    msgpack::packer<msgpack::sbuffer> packer(&buf);
+    packer.pack(server.turn_data);
+    noerr = server.send_response(id_waiting, std::move(buf));
+    if (!noerr) {
+      return 1;
+    }
+    id_playing = id_waiting;
+    id_waiting = 1 - id_playing;
   }
+  // for (int i = 0; i < client_id; i++) {
+  //   noerr = server.get_turn_data(i);
+  //   if (!noerr) {
+  //     return 1;
+  //   }
+  // }
 
   server.cleanup();
   darena::log << "Server ended.\n";

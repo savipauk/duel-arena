@@ -22,19 +22,17 @@ struct TCPClient {
   std::string username;          // TODO: This too
   IPaddress server_ip;           // TODO: This too
   TCPsocket client_communication_socket;
-  SDLNet_SocketSet socket_set;
 
   TCPClient(const std::string& server_ip_string, const std::string& username)
       : server_ip_string(server_ip_string),
         username(username),
         server_ip(0),
-        client_communication_socket(nullptr),
-        socket_set(nullptr) {}
+        client_communication_socket(nullptr) {}
 
   bool initialize();
   bool send_connection_request();
   bool wait_for_message();
-  std::optional<msgpack::unpacked> get_connection_response();
+  std::optional<msgpack::unpacked> get_response();
   bool send_turn_data(std::unique_ptr<darena::ClientTurn> turn_data);
   void cleanup();
 

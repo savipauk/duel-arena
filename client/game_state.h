@@ -54,4 +54,21 @@ class GSConnected : public GameState {
   void render(darena::Game* game) override;
 };
 
+class GSPlayTurn : public GameState {
+ public:
+  void process_input(darena::Game* game, SDL_Event* e) override;
+  void update(darena::Game* game, float delta_time) override;
+  void render(darena::Game* game) override;
+};
+
+class GSWaitTurn : public GameState {
+ private:
+  std::atomic_bool thread_running;
+  void job(Game* game);
+ public:
+  void process_input(darena::Game* game, SDL_Event* e) override;
+  void update(darena::Game* game, float delta_time) override;
+  void render(darena::Game* game) override;
+};
+
 }  // namespace darena

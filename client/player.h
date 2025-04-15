@@ -52,6 +52,8 @@ class Player {
   void process_input(darena::Game* game, SDL_Event* e);
   void update(darena::Game* game, float delta_time);
   void render(darena::Game* game);
+
+  void reset();
 };
 
 }  // namespace darena

@@ -40,7 +40,7 @@ bool Game::get_island_data() {
     return false;
   }
 
-  std::optional<msgpack::unpacked> response = client.get_connection_response();
+  std::optional<msgpack::unpacked> response = client.get_response();
   if (!response.has_value()) {
     return false;
   }
@@ -77,12 +77,57 @@ void Game::end_turn() {
     angles.append(" ");
   }
 
-  darena::log << turn_data->id << "\tMovements: " << movements << "\tAngles: " << angles << "\t"
-              << turn_data->shot_angle << "\t" << turn_data->shot_power << "\n";
+  darena::log << turn_data->id << "\tMovements: " << movements
+              << "\tAngles: " << angles << "\t" << turn_data->shot_angle << "\t"
+              << turn_data->shot_power << "\n";
 
   noerr = client.send_turn_data(std::move(turn_data));
+  turn_data = std::make_unique<darena::ClientTurn>();
 
   my_turn = false;
+
+  player->reset();
+
+  darena::log << "Player " << id << " going from Play to Wait\n";
+
+  set_state(std::make_unique<GSWaitTurn>());
+}
+
+bool Game::get_turn_data() {
+  bool noerr = client.wait_for_message();
+  if (!noerr) {
+    return false;
+  }
+
+  std::optional<msgpack::unpacked> response = client.get_response();
+  if (!response.has_value()) {
+    return false;
+  }
+
+  try {
+    msgpack::object obj = response->get();
+    darena::ClientTurn res;
+    obj.convert(res);
+    int turn_data_client_id = res.id;
+    std::string movements = "";
+    std::string angles = "";
+    for (int i : res.movements) {
+      movements.append(std::to_string(i));
+      movements.append(" ");
+    }
+    for (int i : res.angle_changes) {
+      angles.append(std::to_string(i));
+      angles.append(" ");
+    }
+    darena::log << turn_data_client_id << "\tMovements: " << movements
+                << "\tAngles: " << angles << "\t" << res.shot_angle << "\t"
+                << res.shot_power << "\n";
+  } catch (const std::exception& e) {
+    darena::log << "Message parse error: " << e.what() << "\n";
+    return false;
+  }
+
+  return true;
 }
 
 void Game::process_input(SDL_Event* e) {

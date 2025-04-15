@@ -7,6 +7,12 @@
 
 namespace darena {
 
+void Player::reset() { 
+  shot_state = IDLE;
+  shot_power = 0.0f;
+  keys_pressed.clear();
+}
+
 void Player::process_input(darena::Game* game, SDL_Event* e) {
   bool last_frame_space = keys_pressed.count(SDLK_SPACE);
   move_x = 0;
@@ -268,7 +274,7 @@ void Player::render(darena::Game* game) {
       ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse |
       ImGuiWindowFlags_NoSavedSettings;
 
-  ImGui::Begin("Overlay", nullptr, window_flags);
+  ImGui::Begin("Shot Overlay", nullptr, window_flags);
   ImGui::Text("Shot power: %0.f  ",
               shot_power);  // Two whitespaces because for some reason ImGui
                             // doesn't size the text box properly

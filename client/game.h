@@ -44,6 +44,9 @@ struct Game {
   // Ends the turn and sends data to the server
   void end_turn();
 
+  // Waits for the server to send other player turn data
+  bool get_turn_data();
+
   // Update functions
   void process_input(SDL_Event* e);
   void update(float delta_time);

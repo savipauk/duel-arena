@@ -12,6 +12,7 @@ namespace darena {
 struct TCPServer {
   std::array<bool, MAX_CLIENTS> client_connected;
   std::array<TCPsocket, MAX_CLIENTS> client_communication_socket;
+  std::unique_ptr<darena::ClientTurn> turn_data;
   TCPsocket server_listening_socket;
   SDLNet_SocketSet socket_set;
   int client_id = 0;

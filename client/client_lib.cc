@@ -50,7 +50,7 @@ bool TCPClient::send_connection_request() {
 
 bool TCPClient::wait_for_message() {
   bool socket_ready = false;
-  socket_set = SDLNet_AllocSocketSet(1);
+  SDLNet_SocketSet socket_set = SDLNet_AllocSocketSet(1);
   if (!socket_set) {
     darena::log << "SDLNet_AllocSocketSet Error: " << SDLNet_GetError() << "\n";
     return false;
@@ -80,10 +80,11 @@ bool TCPClient::wait_for_message() {
     socket_ready = true;
   }
 
+  SDLNet_FreeSocketSet(socket_set);
   return true;
 }
 
-std::optional<msgpack::unpacked> TCPClient::get_connection_response() {
+std::optional<msgpack::unpacked> TCPClient::get_response() {
   // Read the message length first
   uint32_t message_size;
   int len = SDLNet_TCP_Recv(client_communication_socket, &message_size,
@@ -107,10 +108,14 @@ std::optional<msgpack::unpacked> TCPClient::get_connection_response() {
   }
   darena::log << "Received a message from the server.\n";
 
-  msgpack::unpacked result;
-  msgpack::unpack(result, message.data(), message_size);
-
-  return result;
+  try {
+    msgpack::unpacked result;
+    msgpack::unpack(result, message.data(), message_size);
+    return result;
+  } catch (const std::exception& e) {
+    darena::log << "Message unpack error: " << e.what() << "\n";
+    return {};
+  }
 }
 
 bool TCPClient::send_turn_data(std::unique_ptr<darena::ClientTurn> turn_data) {
@@ -141,8 +146,6 @@ bool TCPClient::send_turn_data(std::unique_ptr<darena::ClientTurn> turn_data) {
 }
 
 void TCPClient::cleanup() {
-  SDLNet_TCP_DelSocket(socket_set, client_communication_socket);
-  SDLNet_FreeSocketSet(socket_set);
   SDLNet_TCP_Close(client_communication_socket);
   SDLNet_Quit();
 }
