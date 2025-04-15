@@ -2,7 +2,7 @@
 
 #include <SDL_events.h>
 
-#include <thread>
+#include <atomic>
 
 namespace darena {
 
@@ -25,8 +25,8 @@ class GSInitial : public GameState {
 
 class GSConnecting : public GameState {
  private:
-  std::thread network_thread;
   std::atomic_bool thread_running;
+  std::atomic_bool transition_ready;
   void job(Game* game);
 
  public:
@@ -37,8 +37,8 @@ class GSConnecting : public GameState {
 
 class GSWaitingForIslandData : public GameState {
  private:
-  std::thread network_thread;
   std::atomic_bool thread_running;
+  std::atomic_bool transition_ready;
   void job(Game* game);
 
  public:
@@ -64,7 +64,19 @@ class GSPlayTurn : public GameState {
 class GSWaitTurn : public GameState {
  private:
   std::atomic_bool thread_running;
+  std::atomic_bool transition_ready;
   void job(Game* game);
+
+ public:
+  void process_input(darena::Game* game, SDL_Event* e) override;
+  void update(darena::Game* game, float delta_time) override;
+  void render(darena::Game* game) override;
+};
+
+class GSSimulateTurn : public GameState {
+ private:
+   bool sent = false;
+
  public:
   void process_input(darena::Game* game, SDL_Event* e) override;
   void update(darena::Game* game, float delta_time) override;

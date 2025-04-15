@@ -16,6 +16,7 @@ class GameState;
 struct Game {
   int id;
   bool my_turn;
+  bool enemy_was_simulating_previous_step = false;
   std::string username;
   std::string server_ip;
   darena::TCPClient client;
@@ -43,6 +44,9 @@ struct Game {
 
   // Ends the turn and sends data to the server
   void end_turn();
+
+  // Simulates the turn
+  bool simulate_turn();
 
   // Waits for the server to send other player turn data
   bool get_turn_data();

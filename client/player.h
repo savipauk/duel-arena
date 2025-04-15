@@ -15,8 +15,8 @@ class Player {
   int move_y = 0;
 
  public:
-  enum ShotState { IDLE, CHARGING, SHOOT };
-  ShotState shot_state = IDLE;
+  enum class ShotState { IDLE, CHARGING, SHOOT };
+  ShotState shot_state = ShotState::IDLE;
   darena::Position position;
   int width;
   int height;

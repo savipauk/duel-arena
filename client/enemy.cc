@@ -2,11 +2,101 @@
 
 #include <SDL_opengl.h>
 
+#include <mutex>
+#include <thread>
+
 #include "game.h"
 
 namespace darena {
 
 void Enemy::process_input(darena::Game* game, SDL_Event* e) {}
+
+
+void Enemy::simulation_thread() {
+  if (!current_turn_data) {
+    darena::log << "current_turn_data not set!\n";
+    return;
+  }
+
+  while (movement_index < current_turn_data->movements.size()) {
+    {
+      // Wait for update() to be ready
+      std::unique_lock lock(simulation_mutex);
+      action_cv.wait(lock, [this] { return action_finished.load(); });
+
+      current_action = CurrentAction::MOVING;
+      move_x = current_turn_data->movements[movement_index];
+
+      // Signal to update() that it has a new action
+      action_finished = false;
+    }
+    {
+      // Wait for update() to finish current action
+      std::unique_lock lock(simulation_mutex);
+      action_cv.wait(lock, [this] { return action_finished.load(); });
+      movement_index++;
+    }
+  }
+
+  // Wait 1 second
+  usleep(1000 * 1000);
+
+  while (shot_angle_index < current_turn_data->angle_changes.size()) {
+    {
+      std::unique_lock lock(simulation_mutex);
+      action_cv.wait(lock, [this] { return action_finished.load(); });
+
+      current_action = CurrentAction::AIMING;
+      move_y = current_turn_data->angle_changes[shot_angle_index];
+
+      action_finished = false;
+    }
+    {
+      std::unique_lock lock(simulation_mutex);
+      action_cv.wait(lock, [this] { return action_finished.load(); });
+      shot_angle_index++;
+    }
+  }
+
+  if (!shot_initiated) {
+    {
+      std::unique_lock lock(simulation_mutex);
+      action_cv.wait(lock, [this] { return action_finished.load(); });
+
+      current_action = CurrentAction::SHOOTING;
+      shot_power = current_turn_data->shot_power;
+      shot_angle_should_be = current_turn_data->shot_angle;
+
+      action_finished = false;
+    }
+    {
+      std::unique_lock lock(simulation_mutex);
+      action_cv.wait(lock, [this] { return action_finished.load(); });
+      shot_initiated = true;
+    }
+  }
+
+  // Simulation complete
+  current_action = CurrentAction::IDLE;
+  is_simulating = false;
+  current_turn_data.reset();
+}
+
+void Enemy::start_simulation(std::unique_ptr<darena::ClientTurn> turn_data) {
+  if (is_simulating.load()) {
+    darena::log << "Already simulating enemy movement!\n";
+  }
+
+  current_turn_data = std::move(turn_data);
+  current_action = CurrentAction::IDLE;
+  movement_index = 0;
+  shot_angle_index = 0;
+  shot_initiated = false;
+  action_finished.store(true);
+  is_simulating.store(true);
+
+  std::thread([this]() { this->simulation_thread(); }).detach();
+}
 
 void Enemy::update(darena::Game* game, float delta_time) {
   if (falling) {
@@ -61,6 +151,46 @@ void Enemy::update(darena::Game* game, float delta_time) {
     float y_intercept = closest.y - slope * closest.x;
     float y_point = slope * position.x + y_intercept;
     position.y = std::round(y_point) - width / 2.0f + 5;
+  }
+
+  if (is_simulating.load() && !action_finished.load()) {
+    bool finished_frame = false;
+    CurrentAction action = current_action.load();
+    switch (action) {
+      case CurrentAction::MOVING: {
+        darena::log << "Moving\n";
+        current_x_speed = move_x * move_speed;
+        position.x += current_x_speed * delta_time;
+        finished_frame = true;
+        break;
+      }
+      case CurrentAction::AIMING: {
+        darena::log << "Aiming\n";
+        shot_angle += move_y * shot_angle_change_speed * delta_time;
+        shot_angle = std::clamp(shot_angle, min_shot_angle, max_shot_angle);
+        finished_frame = true;
+        break;
+      }
+      case CurrentAction::SHOOTING: {
+        darena::log << "Shooting\n";
+        finished_frame = true;
+        break;
+      }
+      case CurrentAction::IDLE: {
+        darena::log << "Idle\n";
+        finished_frame = true;
+        break;
+      }
+    }
+
+    if (finished_frame) {
+      {
+        std::lock_guard lock(simulation_mutex);
+        action_finished = true;
+        current_action = CurrentAction::IDLE;
+      }
+      action_cv.notify_one();
+    }
   }
 }
 

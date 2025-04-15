@@ -93,6 +93,35 @@ void Game::end_turn() {
   set_state(std::make_unique<GSWaitTurn>());
 }
 
+bool Game::simulate_turn() {
+  if (!turn_data || !enemy) {
+    darena::log << "!turn_data || !enemy in simulate_turn()!\n";
+    return false;
+  }
+
+  std::string movements = "";
+  std::string angles = "";
+  for (int i : turn_data->movements) {
+    movements.append(std::to_string(i));
+    movements.append(" ");
+  }
+  for (int i : turn_data->angle_changes) {
+    angles.append(std::to_string(i));
+    angles.append(" ");
+  }
+
+  darena::log << turn_data->id << "\tMovements: " << movements
+              << "\tAngles: " << angles << "\t" << turn_data->shot_angle << "\t"
+              << turn_data->shot_power << "\n";
+
+
+  enemy->start_simulation(std::move(turn_data));
+
+  turn_data = std::make_unique<darena::ClientTurn>();
+
+  return true;
+}
+
 bool Game::get_turn_data() {
   bool noerr = client.wait_for_message();
   if (!noerr) {
@@ -106,22 +135,22 @@ bool Game::get_turn_data() {
 
   try {
     msgpack::object obj = response->get();
-    darena::ClientTurn res;
-    obj.convert(res);
-    int turn_data_client_id = res.id;
+    turn_data = std::make_unique<darena::ClientTurn>();
+    obj.convert(*turn_data);
+    int turn_data_client_id = turn_data->id;
     std::string movements = "";
     std::string angles = "";
-    for (int i : res.movements) {
+    for (int i : turn_data->movements) {
       movements.append(std::to_string(i));
       movements.append(" ");
     }
-    for (int i : res.angle_changes) {
+    for (int i : turn_data->angle_changes) {
       angles.append(std::to_string(i));
       angles.append(" ");
     }
     darena::log << turn_data_client_id << "\tMovements: " << movements
-                << "\tAngles: " << angles << "\t" << res.shot_angle << "\t"
-                << res.shot_power << "\n";
+                << "\tAngles: " << angles << "\t" << turn_data->shot_angle << "\t"
+                << turn_data->shot_power << "\n";
   } catch (const std::exception& e) {
     darena::log << "Message parse error: " << e.what() << "\n";
     return false;
@@ -161,6 +190,12 @@ void Game::update(float delta_time) {
 
   if (enemy) {
     enemy->update(this, delta_time);
+    bool enemy_is_simulating = enemy->is_simulating.load();
+    if (!enemy_is_simulating && enemy_was_simulating_previous_step) {
+      my_turn = true;
+      set_state(std::make_unique<GSPlayTurn>());
+    }
+    enemy_was_simulating_previous_step = enemy_is_simulating;
   }
 
   if (left_island) {

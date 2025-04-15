@@ -1,6 +1,7 @@
 #include "game_state.h"
 
 #include <SDL_opengl.h>
+#include <thread>
 
 #include "game.h"
 #include "imgui.h"
@@ -48,14 +49,18 @@ void GSConnecting::job(Game* game) {
   bool successfully_connected = game->connect_to_server();
   if (successfully_connected) {
     thread_running = false;
-    game->set_state(std::make_unique<GSWaitingForIslandData>());
+    transition_ready = true;
   }
 }
 void GSConnecting::update(Game* game, float delta_time) {
-  if (!thread_running) {
-    network_thread = std::thread([this, game]() { this->job(game); });
-    network_thread.detach();
-    thread_running = true;
+  if (transition_ready) {
+    game->set_state(std::make_unique<GSWaitingForIslandData>());
+    transition_ready = false;
+  }
+
+  bool expected = false;
+  if (thread_running.compare_exchange_strong(expected, true)) {
+    std::thread([this, game]() { this->job(game); }).detach();
   }
 }
 
@@ -87,7 +92,15 @@ void GSWaitingForIslandData::process_input(Game* game, SDL_Event* e) { return; }
 void GSWaitingForIslandData::job(Game* game) {
   bool successfully_connected = game->get_island_data();
   if (successfully_connected) {
+    transition_ready = true;
     thread_running = false;
+  }
+}
+
+void GSWaitingForIslandData::update(Game* game, float delta_time) {
+  if (transition_ready) {
+    transition_ready = false;
+
     Position player_pos = left_pos;
     Position enemy_pos = right_pos;
     std::vector<darena::IslandPoint> player_heightmap =
@@ -108,13 +121,10 @@ void GSWaitingForIslandData::job(Game* game) {
     game->enemy->heightmap = enemy_heightmap;
     game->set_state(std::make_unique<GSConnected>());
   }
-}
 
-void GSWaitingForIslandData::update(Game* game, float delta_time) {
-  if (!thread_running) {
-    network_thread = std::thread([this, game]() { this->job(game); });
-    network_thread.detach();
-    thread_running = true;
+  bool expected = false;
+  if (thread_running.compare_exchange_strong(expected, true)) {
+    std::thread([this, game]() { this->job(game); }).detach();
   }
 }
 
@@ -153,19 +163,66 @@ void GSConnected::update(Game* game, float delta_time) {
 
 void GSConnected::render(Game* game) {}
 
+void GSPlayTurn::process_input(Game* game, SDL_Event* e) {
+  switch (e->type) {
+    case SDL_KEYDOWN: {
+      if (e->key.keysym.sym == SDLK_r) {
+        if (game->id == 0) {
+          game->player->position = left_pos;
+        } else {
+          game->player->position = right_pos;
+        }
+        game->player->shot_power = 0;
+        game->player->shot_state = Player::ShotState::IDLE;
+      }
+      break;
+    }
+  }
+}
+
+void GSPlayTurn::update(Game* game, float delta_time) {}
+
+void GSPlayTurn::render(Game* game) {
+  const char* message = "YOUR TURN";
+
+  ImVec2 text_size = ImGui::CalcTextSize(message);
+  ImVec2 padding = ImVec2(20.0f, 20.0f);
+
+  ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
+  ImVec2 window_pos = ImVec2(viewport_size.x * 0.5f, viewport_size.y * 0.25f);
+  ImVec2 window_size = ImVec2(text_size.x + padding.x, text_size.y + padding.y);
+
+  ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowSize(window_size);
+
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse |
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+
+  ImGui::Begin("Turn Overlay", nullptr, window_flags);
+  ImGui::TextUnformatted(message);
+  ImGui::End();
+}
+
 void GSWaitTurn::process_input(Game* game, SDL_Event* e) {}
 
 void GSWaitTurn::job(Game* game) {
   bool got_turn_data = game->get_turn_data();
   if (got_turn_data) {
+    transition_ready = true;
     thread_running = false;
-    game->my_turn = true;
-    darena::log << "Player " << game->id << " going from Wait to Play\n";
-    game->set_state(std::make_unique<GSPlayTurn>());
   }
 }
 
 void GSWaitTurn::update(Game* game, float delta_time) {
+  if (transition_ready) {
+    transition_ready = false;
+    darena::log << "Player " << game->id << " going from Wait to Play\n";
+    game->set_state(std::make_unique<GSSimulateTurn>());
+    return;
+  }
+
   bool expected = false;
   if (thread_running.compare_exchange_strong(expected, true)) {
     std::thread([this, game]() { this->job(game); }).detach();
@@ -195,27 +252,16 @@ void GSWaitTurn::render(Game* game) {
   ImGui::End();
 }
 
-void GSPlayTurn::process_input(Game* game, SDL_Event* e) {
-  switch (e->type) {
-    case SDL_KEYDOWN: {
-      if (e->key.keysym.sym == SDLK_r) {
-        if (game->id == 0) {
-          game->player->position = left_pos;
-        } else {
-          game->player->position = right_pos;
-        }
-        game->player->shot_power = 0;
-        game->player->shot_state = Player::IDLE;
-      }
-      break;
-    }
+void GSSimulateTurn::process_input(Game* game, SDL_Event* e) {}
+
+void GSSimulateTurn::update(Game* game, float delta_time) {
+  if (!sent) {
+    sent = game->simulate_turn();
   }
 }
 
-void GSPlayTurn::update(Game* game, float delta_time) {}
-
-void GSPlayTurn::render(Game* game) {
-  const char* message = "YOUR TURN";
+void GSSimulateTurn::render(Game* game) {
+  const char* message = "SIMULATING TURN";
 
   ImVec2 text_size = ImGui::CalcTextSize(message);
   ImVec2 padding = ImVec2(20.0f, 20.0f);

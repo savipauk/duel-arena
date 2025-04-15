@@ -7,8 +7,8 @@
 
 namespace darena {
 
-void Player::reset() { 
-  shot_state = IDLE;
+void Player::reset() {
+  shot_state = ShotState::IDLE;
   shot_power = 0.0f;
   keys_pressed.clear();
 }
@@ -39,23 +39,23 @@ void Player::process_input(darena::Game* game, SDL_Event* e) {
   bool change_happened = last_frame_space != keys_pressed.count(SDLK_SPACE);
   bool change_shot_state = keys_pressed.count(SDLK_SPACE) && change_happened;
   switch (shot_state) {
-    case IDLE: {
+    case ShotState::IDLE: {
       if (change_shot_state) {
         // Initiated shot
-        shot_state = CHARGING;
+        shot_state = ShotState::CHARGING;
         darena::log << "IDLE -> CHARGING\n";
       }
       break;
     }
-    case CHARGING: {
+    case ShotState::CHARGING: {
       if (change_shot_state) {
         // Decided to shoot
-        shot_state = SHOOT;
+        shot_state = ShotState::SHOOT;
         darena::log << "CHARGING -> SHOOT\n";
       }
       break;
     }
-    case SHOOT: {
+    case ShotState::SHOOT: {
       break;
     }
   }
@@ -131,12 +131,15 @@ void Player::update(darena::Game* game, float delta_time) {
       if (current_x_speed < 0) {
         multiplier = -1;
       }
-      current_x_speed -= multiplier * deacceleration_x * delta_time;
+      // Dirty fix for misalignment between players 
+
+      // current_x_speed -= multiplier * deacceleration_x * delta_time;
+      current_x_speed = 0;
     }
   }
 
   switch (shot_state) {
-    case IDLE: {
+    case ShotState::IDLE: {
       position.x += current_x_speed * delta_time;
       shot_angle += move_y * shot_angle_change_speed * delta_time;
       shot_angle = std::clamp(shot_angle, min_shot_angle, max_shot_angle);
@@ -150,12 +153,12 @@ void Player::update(darena::Game* game, float delta_time) {
       }
       break;
     }
-    case CHARGING: {
+    case ShotState::CHARGING: {
       shot_power += move_y * shot_power_change_speed * delta_time;
       shot_power = std::clamp(shot_power, min_shot_power, max_shot_power);
       break;
     }
-    case SHOOT: {
+    case ShotState::SHOOT: {
       game->turn_data->shot_angle = shot_angle;
       game->turn_data->shot_power = shot_power;
       game->end_turn();
