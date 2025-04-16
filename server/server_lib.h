@@ -29,6 +29,7 @@ struct TCPServer {
   bool read_message(int id);
   bool send_response(int id, msgpack::sbuffer data);
   bool get_turn_data(int id);
+  void trim_turn_data();
   void cleanup();
 };
 

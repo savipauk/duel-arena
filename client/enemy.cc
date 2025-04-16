@@ -11,7 +11,6 @@ namespace darena {
 
 void Enemy::process_input(darena::Game* game, SDL_Event* e) {}
 
-
 void Enemy::simulation_thread() {
   if (!current_turn_data) {
     darena::log << "current_turn_data not set!\n";
@@ -159,7 +158,27 @@ void Enemy::update(darena::Game* game, float delta_time) {
     switch (action) {
       case CurrentAction::MOVING: {
         darena::log << "Moving\n";
-        current_x_speed = move_x * move_speed;
+        if (move_x != 0) {
+          current_x_speed = move_x * move_speed;
+          zero_movement_counter = 0;
+        } else {
+          if (are_equal(current_x_speed, 0.0f)) {
+            current_x_speed = 0;
+          } else {
+            int multiplier = 1;
+            if (current_x_speed < 0) {
+              multiplier = -1;
+            }
+            // Dirty fix for misalignment between players
+
+            current_x_speed -= multiplier * deacceleration_x * delta_time;
+            zero_movement_counter++;
+            // current_x_speed = 0;
+            if (zero_movement_counter >= MAX_N_OF_ZERO_IN_MOVEMENT) {
+              current_x_speed = 0;
+            }
+          }
+        }
         position.x += current_x_speed * delta_time;
         finished_frame = true;
         break;

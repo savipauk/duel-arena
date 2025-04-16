@@ -23,6 +23,8 @@
 
 #define MAX_CLIENTS 2
 
+#define MAX_N_OF_ZERO_IN_MOVEMENT 1
+
 namespace darena {
 
 // Handles log for client/server specific prefixes.

@@ -81,6 +81,7 @@ int main() {
     if (!noerr) {
       return 1;
     }
+    server.trim_turn_data();
     msgpack::sbuffer buf;
     msgpack::packer<msgpack::sbuffer> packer(&buf);
     packer.pack(server.turn_data);

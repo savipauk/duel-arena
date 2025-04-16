@@ -86,8 +86,6 @@ void Game::end_turn() {
 
   my_turn = false;
 
-  player->reset();
-
   darena::log << "Player " << id << " going from Play to Wait\n";
 
   set_state(std::make_unique<GSWaitTurn>());

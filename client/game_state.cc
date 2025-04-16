@@ -180,7 +180,12 @@ void GSPlayTurn::process_input(Game* game, SDL_Event* e) {
   }
 }
 
-void GSPlayTurn::update(Game* game, float delta_time) {}
+void GSPlayTurn::update(Game* game, float delta_time) {
+  if (!reset) {
+    game->player->reset();
+    reset = true;
+  }
+}
 
 void GSPlayTurn::render(Game* game) {
   const char* message = "YOUR TURN";

@@ -8,6 +8,7 @@
 namespace darena {
 
 void Player::reset() {
+  gas = 100;
   shot_state = ShotState::IDLE;
   shot_power = 0.0f;
   keys_pressed.clear();
@@ -121,20 +122,25 @@ void Player::update(darena::Game* game, float delta_time) {
     return;
   }
 
-  if (move_x != 0) {
+  if (move_x != 0 && gas > 0) {
     current_x_speed = move_x * move_speed;
-  } else if (move_x == 0 || falling) {
+    gas -= gas_depletion_multiplier;
+    zero_movement_counter = 0;
+  } else if (move_x == 0 || falling || gas <= 0) {
     if (are_equal(current_x_speed, 0.0f)) {
       current_x_speed = 0;
+      darena::log << "counter: " << std::to_string(zero_movement_counter) << "\n";
     } else {
       int multiplier = 1;
       if (current_x_speed < 0) {
         multiplier = -1;
       }
-      // Dirty fix for misalignment between players 
-
-      // current_x_speed -= multiplier * deacceleration_x * delta_time;
-      current_x_speed = 0;
+      zero_movement_counter++;
+      darena::log << "counter: " << std::to_string(zero_movement_counter) << "\n";
+      current_x_speed -= multiplier * deacceleration_x * delta_time;
+      if (zero_movement_counter >= MAX_N_OF_ZERO_IN_MOVEMENT) {
+        current_x_speed = 0;
+      }
     }
   }
 
@@ -144,9 +150,11 @@ void Player::update(darena::Game* game, float delta_time) {
       shot_angle += move_y * shot_angle_change_speed * delta_time;
       shot_angle = std::clamp(shot_angle, min_shot_angle, max_shot_angle);
       if (!falling) {
-        if (move_x != 0) {
+        if (gas > 0) {
           game->turn_data->movements.emplace_back(move_x);
         }
+        // if (move_x != 0) {
+        // }
         if (move_y != 0) {
           game->turn_data->angle_changes.emplace_back(move_y);
         }
@@ -233,7 +241,7 @@ void Player::render(darena::Game* game) {
   glEnd();
   glPopMatrix();
 
-  // Shot power bar
+  // Shot power / gas bar
   int bar_width = width * 2;
   int bar_height = height / 2;
   top_left = {-bar_width / 2.0f, bar_height / 2.0f};
@@ -254,7 +262,12 @@ void Player::render(darena::Game* game) {
 
   glEnd();
 
-  float percentage_filled = shot_power / 100.0;
+  float percentage_filled = 0;
+  if (shot_state == ShotState::IDLE) {
+    percentage_filled = gas / 100.0;
+  } else {
+    percentage_filled = shot_power / 100.0;
+  }
   float diff = top_right.x - top_left.x;
   top_right.x -= diff * (1 - percentage_filled);
   bot_right.x -= diff * (1 - percentage_filled);
@@ -270,17 +283,30 @@ void Player::render(darena::Game* game) {
   glPopMatrix();
 
   // Shot power text
-  ImGui::SetNextWindowPos(ImVec2(50, 50));
+  std::string message = "";
+  if (shot_state == ShotState::IDLE) {
+    message = "GAS: " + std::to_string((int)gas);
+  } else {
+    message = "SHOT POWER: " + std::to_string((int)shot_power);
+  }
+
+  ImVec2 text_size = ImGui::CalcTextSize(message.c_str());
+  ImVec2 padding = ImVec2(20.0f, 20.0f);
+
+  ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
+  ImVec2 window_pos = ImVec2(viewport_size.x * 0.15f, viewport_size.y * 0.1f);
+  ImVec2 window_size = ImVec2(text_size.x + padding.x, text_size.y + padding.y);
+
+  ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowSize(window_size);
 
   ImGuiWindowFlags window_flags =
       ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
       ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse |
-      ImGuiWindowFlags_NoSavedSettings;
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
 
-  ImGui::Begin("Shot Overlay", nullptr, window_flags);
-  ImGui::Text("Shot power: %0.f  ",
-              shot_power);  // Two whitespaces because for some reason ImGui
-                            // doesn't size the text box properly
+  ImGui::Begin("Player Overlay", nullptr, window_flags);
+  ImGui::TextUnformatted(message.c_str());
   ImGui::End();
 }
 

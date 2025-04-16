@@ -55,6 +55,9 @@ class GSConnected : public GameState {
 };
 
 class GSPlayTurn : public GameState {
+ private:
+  bool reset = false;
+
  public:
   void process_input(darena::Game* game, SDL_Event* e) override;
   void update(darena::Game* game, float delta_time) override;
@@ -75,7 +78,7 @@ class GSWaitTurn : public GameState {
 
 class GSSimulateTurn : public GameState {
  private:
-   bool sent = false;
+  bool sent = false;
 
  public:
   void process_input(darena::Game* game, SDL_Event* e) override;

@@ -13,6 +13,9 @@ class Player {
   std::unordered_set<SDL_Keycode> keys_pressed;
   int move_x = 0;
   int move_y = 0;
+  float gas = 100;
+  float gas_depletion_multiplier = 1.5f;
+  int zero_movement_counter = 0;
 
  public:
   enum class ShotState { IDLE, CHARGING, SHOOT };

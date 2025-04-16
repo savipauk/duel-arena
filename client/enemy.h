@@ -24,6 +24,8 @@ class Enemy {
   float max_y_speed = 1000;
   float deacceleration_x = 500;
 
+  int zero_movement_counter = 0;
+
   float angle_rad = 0.0f;
 
   float shot_angle = M_PI / 4.0f;

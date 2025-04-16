@@ -199,7 +199,6 @@ bool TCPServer::get_turn_data(int id) {
     angles.append(" ");
   }
 
-
   darena::log << turn_data->id << "\tMovements: " << movements
               << "\tAngles: " << angles << "\t" << turn_data->shot_angle << "\t"
               << turn_data->shot_power << "\n";
@@ -207,6 +206,43 @@ bool TCPServer::get_turn_data(int id) {
   return true;
 }
 
+void TCPServer::trim_turn_data() {
+  if (!turn_data) {
+    return;
+  }
+
+  std::vector<int> trimmed_movements = {};
+  int previous_i = 0;
+  int n_of_zero = 0;
+  for (auto it = turn_data->movements.begin(); it != turn_data->movements.end();
+       it++) {
+    if (n_of_zero >= MAX_N_OF_ZERO_IN_MOVEMENT) {
+      if (*it == 0) {
+        continue;
+      }
+    }
+    if (*it == 0) {
+      n_of_zero++;
+    } else {
+      n_of_zero = 0;
+    }
+    trimmed_movements.emplace_back(*it);
+  }
+
+  std::string movements = "";
+  for (int i : turn_data->movements) {
+    movements.append(std::to_string(i));
+    movements.append(" ");
+  }
+  darena::log << "Old movements: " << movements << "\n";
+  movements = "";
+  for (int i : trimmed_movements) {
+    movements.append(std::to_string(i));
+    movements.append(" ");
+  }
+  darena::log << "New movements: " << movements << "\n";
+  turn_data->movements = trimmed_movements;
+}
 
 void TCPServer::cleanup() {
   for (int i = 0; i < MAX_CLIENTS; i++) {
