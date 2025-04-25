@@ -28,7 +28,7 @@ struct TCPClient {
   TCPClient(const std::string& server_ip_string, const std::string& username)
       : server_ip_string(server_ip_string),
         username(username),
-        server_ip(0),
+        server_ip(),
         client_communication_socket(nullptr) {}
 
   bool initialize();
