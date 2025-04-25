@@ -15,6 +15,7 @@ class Player {
   int move_y = 0;
   float gas = 100;
   float gas_depletion_multiplier = 1.5f;
+  // Used for limiting the number of no-move inputs sent to the server
   int zero_movement_counter = 0;
 
  public:

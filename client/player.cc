@@ -65,7 +65,7 @@ void Player::process_input(darena::Game* game, SDL_Event* e) {
 void Player::update(darena::Game* game, float delta_time) {
   if (falling) {
     move_x = 0;
-    current_y_speed += gravity * delta_time;
+    current_y_speed += gravity * FIXED_TIMESTEP;
     if (current_y_speed >= max_y_speed) {
       current_y_speed = max_y_speed;
     }
@@ -129,15 +129,13 @@ void Player::update(darena::Game* game, float delta_time) {
   } else if (move_x == 0 || falling || gas <= 0) {
     if (are_equal(current_x_speed, 0.0f)) {
       current_x_speed = 0;
-      darena::log << "counter: " << std::to_string(zero_movement_counter) << "\n";
     } else {
       int multiplier = 1;
       if (current_x_speed < 0) {
         multiplier = -1;
       }
       zero_movement_counter++;
-      darena::log << "counter: " << std::to_string(zero_movement_counter) << "\n";
-      current_x_speed -= multiplier * deacceleration_x * delta_time;
+      current_x_speed -= multiplier * deacceleration_x * FIXED_TIMESTEP;
       if (zero_movement_counter >= MAX_N_OF_ZERO_IN_MOVEMENT) {
         current_x_speed = 0;
       }
@@ -146,15 +144,13 @@ void Player::update(darena::Game* game, float delta_time) {
 
   switch (shot_state) {
     case ShotState::IDLE: {
-      position.x += current_x_speed * delta_time;
-      shot_angle += move_y * shot_angle_change_speed * delta_time;
+      position.x += current_x_speed * FIXED_TIMESTEP;
+      shot_angle += move_y * shot_angle_change_speed * FIXED_TIMESTEP;
       shot_angle = std::clamp(shot_angle, min_shot_angle, max_shot_angle);
       if (!falling) {
         if (gas > 0) {
           game->turn_data->movements.emplace_back(move_x);
         }
-        // if (move_x != 0) {
-        // }
         if (move_y != 0) {
           game->turn_data->angle_changes.emplace_back(move_y);
         }
@@ -162,13 +158,14 @@ void Player::update(darena::Game* game, float delta_time) {
       break;
     }
     case ShotState::CHARGING: {
-      shot_power += move_y * shot_power_change_speed * delta_time;
+      shot_power += move_y * shot_power_change_speed * FIXED_TIMESTEP;
       shot_power = std::clamp(shot_power, min_shot_power, max_shot_power);
       break;
     }
     case ShotState::SHOOT: {
       game->turn_data->shot_angle = shot_angle;
       game->turn_data->shot_power = shot_power;
+      game->turn_data->final_position = position;
       game->end_turn();
       break;
     }
@@ -284,29 +281,29 @@ void Player::render(darena::Game* game) {
 
   // Shot power text
   std::string message = "";
+  std::string my_pos = "PLAYER POS: " + position.to_string();
+  std::string enemy_pos = "ENEMY POS: " + game->enemy->position.to_string();
   if (shot_state == ShotState::IDLE) {
     message = "GAS: " + std::to_string((int)gas);
   } else {
     message = "SHOT POWER: " + std::to_string((int)shot_power);
   }
 
-  ImVec2 text_size = ImGui::CalcTextSize(message.c_str());
-  ImVec2 padding = ImVec2(20.0f, 20.0f);
-
   ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
-  ImVec2 window_pos = ImVec2(viewport_size.x * 0.15f, viewport_size.y * 0.1f);
-  ImVec2 window_size = ImVec2(text_size.x + padding.x, text_size.y + padding.y);
+  ImVec2 window_pos = ImVec2(viewport_size.x * 0.1f, viewport_size.y * 0.05f);
 
-  ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-  ImGui::SetNextWindowSize(window_size);
+  ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
 
   ImGuiWindowFlags window_flags =
       ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
       ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse |
-      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
+      ImGuiWindowFlags_AlwaysAutoResize;
 
   ImGui::Begin("Player Overlay", nullptr, window_flags);
   ImGui::TextUnformatted(message.c_str());
+  ImGui::TextUnformatted(my_pos.c_str());
+  ImGui::TextUnformatted(enemy_pos.c_str());
   ImGui::End();
 }
 

@@ -135,13 +135,16 @@ struct ClientTurn {
   std::vector<int> angle_changes;
   float shot_angle;
   float shot_power;
+  darena::Position final_position;
 
-  MSGPACK_DEFINE(id, movements, angle_changes, shot_angle, shot_power);
+  MSGPACK_DEFINE(id, movements, angle_changes, shot_angle, shot_power,
+                 final_position);
 };
 
 std::string ipaddress_to_string(IPaddress* address);
 std::string unit32_t_address_to_string(uint32_t address);
 bool are_equal(float x1, float x2, float epsilon = 1e-10);
+
 
 // Globals
 

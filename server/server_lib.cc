@@ -228,6 +228,9 @@ void TCPServer::trim_turn_data() {
     }
     trimmed_movements.emplace_back(*it);
   }
+  for (int i = 0; i < MAX_N_OF_ZERO_IN_MOVEMENT; i++) {
+    trimmed_movements.emplace_back(0);
+  }
 
   std::string movements = "";
   for (int i : turn_data->movements) {

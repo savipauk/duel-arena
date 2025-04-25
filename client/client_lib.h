@@ -13,6 +13,8 @@
 
 #define TARGET_FPS 60
 
+#define FIXED_TIMESTEP 1.0f / (TARGET_FPS * 1.0f)
+
 namespace darena {
 
 // TODO: This should maybe be a class with the network stuff being private

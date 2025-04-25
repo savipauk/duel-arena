@@ -37,6 +37,10 @@ void Enemy::simulation_thread() {
     }
   }
 
+  while (!are_equal(position.x, current_turn_data->final_position.x)) {
+    position.x = current_turn_data->final_position.x;
+  }
+
   // Wait 1 second
   usleep(1000 * 1000);
 
@@ -99,7 +103,7 @@ void Enemy::start_simulation(std::unique_ptr<darena::ClientTurn> turn_data) {
 
 void Enemy::update(darena::Game* game, float delta_time) {
   if (falling) {
-    current_y_speed += gravity * delta_time;
+    current_y_speed += gravity * FIXED_TIMESTEP;
     if (current_y_speed >= max_y_speed) {
       current_y_speed = max_y_speed;
     }
@@ -169,9 +173,8 @@ void Enemy::update(darena::Game* game, float delta_time) {
             if (current_x_speed < 0) {
               multiplier = -1;
             }
-            // Dirty fix for misalignment between players
 
-            current_x_speed -= multiplier * deacceleration_x * delta_time;
+            current_x_speed -= multiplier * deacceleration_x * FIXED_TIMESTEP;
             zero_movement_counter++;
             // current_x_speed = 0;
             if (zero_movement_counter >= MAX_N_OF_ZERO_IN_MOVEMENT) {
@@ -179,13 +182,13 @@ void Enemy::update(darena::Game* game, float delta_time) {
             }
           }
         }
-        position.x += current_x_speed * delta_time;
+        position.x += current_x_speed * FIXED_TIMESTEP;
         finished_frame = true;
         break;
       }
       case CurrentAction::AIMING: {
         darena::log << "Aiming\n";
-        shot_angle += move_y * shot_angle_change_speed * delta_time;
+        shot_angle += move_y * shot_angle_change_speed * FIXED_TIMESTEP;
         shot_angle = std::clamp(shot_angle, min_shot_angle, max_shot_angle);
         finished_frame = true;
         break;

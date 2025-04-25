@@ -10,7 +10,6 @@ struct Game;
 
 class Enemy {
  private:
-  darena::Position position;
   int width;
   int height;
   int cannon_width;
@@ -51,6 +50,7 @@ class Enemy {
   int move_y = 0;
 
  public:
+  darena::Position position;
   std::vector<darena::IslandPoint> heightmap;
   std::atomic_bool is_simulating{false};
 
@@ -63,7 +63,6 @@ class Enemy {
   void process_input(darena::Game* game, SDL_Event* e);
   void update(darena::Game* game, float delta_time);
   void render(darena::Game* game);
-
   void start_simulation(std::unique_ptr<darena::ClientTurn> turn_data);
 };
 
