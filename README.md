@@ -36,6 +36,7 @@ If you prefer or require the latest versions:
     cd ~
     git clone https://github.com/libsdl-org/SDL_net.git
     cd SDL_net
+    git checkout SDL2
     mkdir build && cd build
     cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/.local
     make -j$(nproc)
