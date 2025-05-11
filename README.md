@@ -22,8 +22,7 @@ sudo apt install -y \
     libsdl2-dev \
     libsdl2-net-dev \
     libmsgpack-dev \
-    libgl1-mesa-dev \
-    git
+    libgl1-mesa-dev
 ```
 
 > **Note**: `libmsgpack-dev` provides the C library only. To get the C++ bindings, you may still need to build from source (see below). Similar situation with `libsdl2-net-dev`. If you don't install these from source, you may need to add additional CMAKE flags, meaning `./build.sh` and `./run.sh` won't work as intended!
