@@ -18,6 +18,8 @@ struct Game {
   int id;
   bool my_turn;
   bool enemy_was_simulating_previous_step = false;
+  bool enemy_still_shooting = false;
+  bool check_for_simulation_end = false;
   std::string username;
   std::string server_ip;
   darena::TCPClient client;
@@ -35,6 +37,7 @@ struct Game {
     turn_data->movements.emplace_back(0);
     turn_data->angle_changes.emplace_back(0);
   }
+
   // Sets the new state
   void set_state(std::unique_ptr<GameState> new_state);
 
@@ -47,11 +50,17 @@ struct Game {
   // Shoots the projectile and ends the turn 
   void end_turn();
 
+  // Resets the projectile pointer and calls send_turn_data if its my turn
+  void projectile_hit();
+
   // Sends turn data to the server
   void send_turn_data();
 
   // Simulates the turn
   bool simulate_turn();
+
+  // Simulates enemy shooting
+  bool simulate_enemy_shoot();
 
   // Waits for the server to send other player turn data
   bool get_turn_data();

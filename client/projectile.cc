@@ -16,8 +16,7 @@ int Projectile::island_hit_poll(darena::Game* game,
   if (nose_y >= point.position.y &&
       nose_x >= point.position.x - ISLAND_POINT_EVERY / 2.0f &&
       nose_x <= point.position.x + ISLAND_POINT_EVERY / 2.0f) {
-    darena::log << "HIT POINT\n";
-    game->send_turn_data();
+    game->projectile_hit();
     velocity_x = 0;
     velocity_y = 0;
 
@@ -55,18 +54,26 @@ void Projectile::update(darena::Game* game, float delta_time) {
   position.y -= velocity_y * FIXED_TIMESTEP;
   angle = std::atan(velocity_y / velocity_x);
 
+  float check_x = game->enemy->position.x;
+  float check_w = game->enemy->width;
+  float check_y = game->enemy->position.y;
+  float check_h = game->enemy->height;
+
+  if (!game->my_turn) {
+    check_x = game->player->position.x;
+    check_w = game->player->width;
+    check_y = game->player->position.y;
+    check_h = game->player->height;
+  }
+
   float nose_x = position.x + std::cos(angle) * width / 2.0f * shot_direction;
   float nose_y = position.y + std::sin(angle) * width / 2.0f;
-  if (nose_x >=
-          game->enemy->position.x - game->enemy->width / 2.0f - width / 2.0f &&
-      nose_x <=
-          game->enemy->position.x + game->enemy->width / 2.0f + width / 2.0f &&
-      nose_y >= game->enemy->position.y - game->enemy->height / 2.0f -
-                    height / 2.0f &&
-      nose_y <= game->enemy->position.y + game->enemy->height / 2.0f +
-                    height / 2.0f) {
+  if (nose_x >= check_x - check_w / 2.0f - width / 2.0f &&
+      nose_x <= check_x + check_w / 2.0f + width / 2.0f &&
+      nose_y >= check_y - check_h / 2.0f - height / 2.0f &&
+      nose_y <= check_y + check_h / 2.0f + height / 2.0f) {
     // Hit enemy
-    game->send_turn_data();
+    game->projectile_hit();
     velocity_x = 0;
     velocity_y = 0;
     return;
@@ -89,10 +96,10 @@ void Projectile::update(darena::Game* game, float delta_time) {
       }
     }
   }
-  darena::log << nose_y << "\n";
+
   if (nose_y >= WINDOW_HEIGHT + height) {
     // Left the screen
-    game->send_turn_data();
+    game->projectile_hit();
     velocity_x = 0;
     velocity_y = 0;
     return;
@@ -126,26 +133,6 @@ void Projectile::render(darena::Game* game) {
 
   glEnd();
   glPopMatrix();
-
-  float w = width;
-  float h = height;
-  float ex = game->enemy->position.x;
-  float ew = game->enemy->width;
-  float ey = game->enemy->position.y;
-  float eh = game->enemy->height;
-
-  float left = ex - ew / 2 - w / 2;
-  float right = ex + ew / 2 + w / 2;
-  float top = ey + eh / 2 + h / 2;
-  float bottom = ey - eh / 2 - h / 2;
-
-  glBegin(GL_QUADS);
-  glColor3f(0.9f, 0.75f, 0.8f);
-  glVertex2f(left, bottom);   // bottom-left
-  glVertex2f(right, bottom);  // bottom-right
-  glVertex2f(right, top);     // top-right
-  glVertex2f(left, top);      // top-left
-  glEnd();
 }
 
 }  // namespace darena

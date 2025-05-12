@@ -46,6 +46,7 @@ class Enemy {
   std::mutex simulation_mutex;
   int move_x = 0;
   int move_y = 0;
+  bool shot = false;
 
  public:
   int width;

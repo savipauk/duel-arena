@@ -195,7 +195,21 @@ void Enemy::update(darena::Game* game, float delta_time) {
       }
       case CurrentAction::SHOOTING: {
         darena::log << "Shooting\n";
-        finished_frame = true;
+
+        int shot_direction = 1;
+        if (game->id == 0) {
+          shot_direction = -1;
+        }
+
+        if (!shot) {
+          game->projectile = std::make_unique<darena::Projectile>(
+              position.x, position.y, shot_angle, shot_power, shot_direction);
+          shot = true;
+        }
+
+        if (game->projectile == nullptr) {
+          finished_frame = true;
+        }
         break;
       }
       case CurrentAction::IDLE: {

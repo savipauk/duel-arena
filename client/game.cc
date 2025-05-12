@@ -77,10 +77,19 @@ void Game::end_turn() {
   set_state(std::make_unique<GSShootProjectile>());
 }
 
-void Game::send_turn_data() {
+void Game::projectile_hit() {
+  darena::log << "PROJECTILE HIT!\n";
   projectile.reset();
 
-  bool noerr;   
+  if (!my_turn) {
+    return;
+  }
+
+  send_turn_data();
+}
+
+void Game::send_turn_data() {
+  bool noerr;
 
   std::string movements = "";
   std::string angles = "";
@@ -131,6 +140,24 @@ bool Game::simulate_turn() {
   enemy->start_simulation(std::move(turn_data));
 
   turn_data = std::make_unique<darena::ClientTurn>();
+
+  return true;
+}
+
+bool Game::simulate_enemy_shoot() {
+  if (!enemy) {
+    darena::log << "!enemy in simulate_enemy_shoot()!\n";
+    return false;
+  }
+
+  int shot_direction = 1;
+  if (id == 0) {
+    shot_direction = -1;
+  }
+
+  projectile = std::make_unique<darena::Projectile>(
+      enemy->position.x, enemy->position.y, turn_data->shot_angle,
+      turn_data->shot_power, shot_direction);
 
   return true;
 }
@@ -211,12 +238,22 @@ void Game::update(float delta_time) {
 
   if (enemy) {
     enemy->update(this, delta_time);
+
     bool enemy_is_simulating = enemy->is_simulating.load();
     if (!enemy_is_simulating && enemy_was_simulating_previous_step) {
       my_turn = true;
       set_state(std::make_unique<GSPlayTurn>());
+      // check_for_simulation_end = true;
     }
+
     enemy_was_simulating_previous_step = enemy_is_simulating;
+    enemy_still_shooting = projectile == nullptr;
+
+    // if (check_for_simulation_end && !enemy_still_shooting) {
+    //   my_turn = true;
+    //   set_state(std::make_unique<GSPlayTurn>());
+    //   check_for_simulation_end = true;
+    // }
   }
 
   if (left_island) {
