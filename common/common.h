@@ -145,7 +145,6 @@ std::string ipaddress_to_string(IPaddress* address);
 std::string unit32_t_address_to_string(uint32_t address);
 bool are_equal(float x1, float x2, float epsilon = 1e-10);
 
-
 // Globals
 
 extern Logger log;

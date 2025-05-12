@@ -8,6 +8,7 @@
 #include "game_state.h"
 #include "island.h"
 #include "player.h"
+#include "projectile.h"
 
 namespace darena {
 
@@ -23,6 +24,7 @@ struct Game {
   std::unique_ptr<darena::GameState> state;
   std::unique_ptr<darena::Player> player;
   std::unique_ptr<darena::Enemy> enemy;
+  std::unique_ptr<darena::Projectile> projectile;
   std::unique_ptr<darena::Island> left_island;
   std::unique_ptr<darena::Island> right_island;
   std::unique_ptr<darena::ClientTurn> turn_data;
@@ -42,8 +44,11 @@ struct Game {
   // Waits for the server to send island data
   bool get_island_data();
 
-  // Ends the turn and sends data to the server
+  // Shoots the projectile and ends the turn 
   void end_turn();
+
+  // Sends turn data to the server
+  void send_turn_data();
 
   // Simulates the turn
   bool simulate_turn();

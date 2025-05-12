@@ -63,8 +63,24 @@ bool Game::get_island_data() {
 }
 
 void Game::end_turn() {
-  bool noerr;
   turn_data->id = id;
+
+  int shot_direction = 1;
+  if (id == 1) {
+    shot_direction = -1;
+  }
+
+  projectile = std::make_unique<darena::Projectile>(
+      player->position.x, player->position.y, turn_data->shot_angle,
+      turn_data->shot_power, shot_direction);
+
+  set_state(std::make_unique<GSShootProjectile>());
+}
+
+void Game::send_turn_data() {
+  projectile.reset();
+
+  bool noerr;   
 
   std::string movements = "";
   std::string angles = "";
@@ -112,7 +128,6 @@ bool Game::simulate_turn() {
               << "\tAngles: " << angles << "\t" << turn_data->shot_angle << "\t"
               << turn_data->shot_power << "\n";
 
-
   enemy->start_simulation(std::move(turn_data));
 
   turn_data = std::make_unique<darena::ClientTurn>();
@@ -147,8 +162,8 @@ bool Game::get_turn_data() {
       angles.append(" ");
     }
     darena::log << turn_data_client_id << "\tMovements: " << movements
-                << "\tAngles: " << angles << "\t" << turn_data->shot_angle << "\t"
-                << turn_data->shot_power << "\n";
+                << "\tAngles: " << angles << "\t" << turn_data->shot_angle
+                << "\t" << turn_data->shot_power << "\n";
   } catch (const std::exception& e) {
     darena::log << "Message parse error: " << e.what() << "\n";
     return false;
@@ -164,6 +179,10 @@ void Game::process_input(SDL_Event* e) {
     if (player) {
       player->process_input(this, e);
     }
+  }
+
+  if (projectile) {
+    projectile->process_input(this, e);
   }
 
   if (enemy) {
@@ -184,6 +203,10 @@ void Game::update(float delta_time) {
 
   if (player) {
     player->update(this, delta_time);
+  }
+
+  if (projectile) {
+    projectile->update(this, delta_time);
   }
 
   if (enemy) {
@@ -222,6 +245,10 @@ void Game::render() {
 
   if (enemy) {
     enemy->render(this);
+  }
+
+  if (projectile) {
+    projectile->render(this);
   }
 
   state->render(this);

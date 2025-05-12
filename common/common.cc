@@ -42,7 +42,6 @@ bool are_equal(float x1, float x2, float epsilon) {
   return std::fabs(x1 - x2) < epsilon;
 }
 
-
 Logger log;
 
 Position left_island_starting_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};

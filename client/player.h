@@ -19,7 +19,7 @@ class Player {
   int zero_movement_counter = 0;
 
  public:
-  enum class ShotState { IDLE, CHARGING, SHOOT };
+  enum class ShotState { IDLE, CHARGING, SHOOT, DISABLED };
   ShotState shot_state = ShotState::IDLE;
   darena::Position position;
   int width;
@@ -51,7 +51,7 @@ class Player {
       : position(x, y), width(width), height(height) {
     cannon_width = width * 1;
     cannon_height = height / 2;
-  };
+  }
 
   void process_input(darena::Game* game, SDL_Event* e);
   void update(darena::Game* game, float delta_time);

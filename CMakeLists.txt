@@ -58,6 +58,7 @@ add_library(ClientLib STATIC
   client/game.cc
   client/game_state.cc
   client/player.cc
+  client/projectile.cc
   client/enemy.cc
   client/island.cc
 ) 

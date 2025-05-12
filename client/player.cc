@@ -57,6 +57,10 @@ void Player::process_input(darena::Game* game, SDL_Event* e) {
       break;
     }
     case ShotState::SHOOT: {
+      // Pressed SHOOT while already shooting
+      break;
+    }
+    case ShotState::DISABLED: {
       break;
     }
   }
@@ -74,11 +78,20 @@ void Player::update(darena::Game* game, float delta_time) {
     current_y_speed = 0;
   }
 
-  auto closest_it = heightmap.begin();
+  auto closest_it = game->left_island->heightmap.begin();
   float closest_distance =
       ISLAND_POINT_EVERY;  // If >= ISLAND_POINT_EVERY / 2 then the player is
                            // off the island
-  for (auto it = heightmap.begin(); it != heightmap.end(); it++) {
+  for (auto it = game->left_island->heightmap.begin(); it != game->left_island->heightmap.end(); it++) {
+    Position point = it->position;
+    float distance = point.x - position.x;
+    if (std::fabs(distance) < std::fabs(closest_distance)) {
+      closest_it = it;
+      closest_distance = distance;
+    }
+  }
+
+  for (auto it = game->right_island->heightmap.begin(); it != game->right_island->heightmap.end(); it++) {
     Position point = it->position;
     float distance = point.x - position.x;
     if (std::fabs(distance) < std::fabs(closest_distance)) {
@@ -167,6 +180,10 @@ void Player::update(darena::Game* game, float delta_time) {
       game->turn_data->shot_power = shot_power;
       game->turn_data->final_position = position;
       game->end_turn();
+      shot_state = ShotState::DISABLED;
+      break;
+    }
+    case ShotState::DISABLED: {
       break;
     }
   }
