@@ -1,6 +1,7 @@
 #include "game_state.h"
 
 #include <SDL_opengl.h>
+
 #include <thread>
 
 #include "game.h"
@@ -209,6 +210,10 @@ void GSPlayTurn::render(Game* game) {
   ImGui::TextUnformatted(message);
   ImGui::End();
 }
+
+void GSShootProjectile::process_input(Game* game, SDL_Event* e) {}
+void GSShootProjectile::update(Game* game, float delta_time) {}
+void GSShootProjectile::render(Game* game) {}
 
 void GSWaitTurn::process_input(Game* game, SDL_Event* e) {}
 

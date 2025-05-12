@@ -10,8 +10,6 @@ struct Game;
 
 class Enemy {
  private:
-  int width;
-  int height;
   int cannon_width;
   int cannon_height;
   int move_speed = 100;
@@ -50,6 +48,8 @@ class Enemy {
   int move_y = 0;
 
  public:
+  int width;
+  int height;
   darena::Position position;
   std::vector<darena::IslandPoint> heightmap;
   std::atomic_bool is_simulating{false};
