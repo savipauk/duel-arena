@@ -35,7 +35,7 @@ class Player {
   bool falling = false;
   float angle_rad = 0.0f;
 
-  std::vector<darena::IslandPoint> heightmap;
+  const std::vector<darena::IslandPoint>* heightmap;
 
   float shot_angle = M_PI / 4.0f;
   float shot_angle_change_speed = 3;

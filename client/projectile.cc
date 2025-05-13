@@ -7,19 +7,28 @@
 
 namespace darena {
 
+void Projectile::hit(darena::Game* game) {
+  game->projectile_hit();
+  velocity_x = 0;
+  velocity_y = 0;
+  no_hit_frames_count = 0;
+}
+
 int Projectile::island_hit_poll(darena::Game* game,
                                 std::vector<darena::IslandPoint>& heightmap,
                                 size_t check_index, float nose_x,
                                 float nose_y) {
   darena::IslandPoint& point = heightmap[check_index];
 
+  // Can't hit terrain that doesn't exist
+  if (point.position.y >= (float)(ISLAND_Y_OFFSET + ISLAND_HEIGHT)) {
+    return 0;
+  }
+
   if (nose_y >= point.position.y &&
       nose_x >= point.position.x - ISLAND_POINT_EVERY / 2.0f &&
       nose_x <= point.position.x + ISLAND_POINT_EVERY / 2.0f) {
-    game->projectile_hit();
-    velocity_x = 0;
-    velocity_y = 0;
-
+    hit(game);
     // TODO: Update to make use of strength
 
     int crater_radius = 5;
@@ -28,7 +37,7 @@ int Projectile::island_hit_poll(darena::Game* game,
     for (int i = -crater_radius; i <= crater_radius; ++i) {
       int neighbour_i = (int)(check_index + i);
 
-      if (neighbour_i >= 0 && (size_t)i < heightmap.size()) {
+      if (neighbour_i >= 0 && (size_t)neighbour_i < heightmap.size()) {
         float distance_factor =
             1.0f - (std::abs((float)i) / (crater_radius + 1.0f));
         float neighbor_modifier = center_impact_modifier * distance_factor;
@@ -54,6 +63,11 @@ void Projectile::update(darena::Game* game, float delta_time) {
   position.y -= velocity_y * FIXED_TIMESTEP;
   angle = std::atan(velocity_y / velocity_x);
 
+  if (no_hit_frames_count <= max_no_hit_frames) {
+    no_hit_frames_count++;
+    return;
+  }
+
   float check_x = game->enemy->position.x;
   float check_w = game->enemy->width;
   float check_y = game->enemy->position.y;
@@ -73,9 +87,7 @@ void Projectile::update(darena::Game* game, float delta_time) {
       nose_y >= check_y - check_h / 2.0f - height / 2.0f &&
       nose_y <= check_y + check_h / 2.0f + height / 2.0f) {
     // Hit enemy
-    game->projectile_hit();
-    velocity_x = 0;
-    velocity_y = 0;
+    hit(game);
     return;
   }
 
@@ -99,9 +111,7 @@ void Projectile::update(darena::Game* game, float delta_time) {
 
   if (nose_y >= WINDOW_HEIGHT + height) {
     // Left the screen
-    game->projectile_hit();
-    velocity_x = 0;
-    velocity_y = 0;
+    hit(game);
     return;
   }
 }

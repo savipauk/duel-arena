@@ -52,7 +52,7 @@ class Enemy {
   int width;
   int height;
   darena::Position position;
-  std::vector<darena::IslandPoint> heightmap;
+  const std::vector<darena::IslandPoint>* heightmap;
   std::atomic_bool is_simulating{false};
 
   Enemy(float x, float y, int width, int height)

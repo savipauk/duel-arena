@@ -78,20 +78,11 @@ void Player::update(darena::Game* game, float delta_time) {
     current_y_speed = 0;
   }
 
-  auto closest_it = game->left_island->heightmap.begin();
+  auto closest_it = heightmap->begin();
   float closest_distance =
       ISLAND_POINT_EVERY;  // If >= ISLAND_POINT_EVERY / 2 then the player is
                            // off the island
-  for (auto it = game->left_island->heightmap.begin(); it != game->left_island->heightmap.end(); it++) {
-    Position point = it->position;
-    float distance = point.x - position.x;
-    if (std::fabs(distance) < std::fabs(closest_distance)) {
-      closest_it = it;
-      closest_distance = distance;
-    }
-  }
-
-  for (auto it = game->right_island->heightmap.begin(); it != game->right_island->heightmap.end(); it++) {
+  for (auto it = heightmap->begin(); it != heightmap->end(); it++) {
     Position point = it->position;
     float distance = point.x - position.x;
     if (std::fabs(distance) < std::fabs(closest_distance)) {
@@ -102,16 +93,18 @@ void Player::update(darena::Game* game, float delta_time) {
 
   Position closest = closest_it->position;
   Position snd_closest = closest;
-  if (closest_distance < 0 && closest_it != heightmap.begin()) {
+  if (closest_distance < 0 && closest_it != heightmap->begin()) {
     snd_closest = (*(--closest_it)).position;
-  } else if (closest_distance > 0 && std::next(closest_it) != heightmap.end()) {
+  } else if (closest_distance > 0 &&
+             std::next(closest_it) != heightmap->end()) {
     snd_closest = (*(++closest_it)).position;
   }
   // Else closest_distance is 0 (exactly in the middle of a point), or player
   // is falling
 
-  if (position.y + width / 2.0f < closest.y ||
-      closest_distance > ISLAND_POINT_EVERY / 2.0f) {
+  if (position.y + height / 2.0f < closest.y ||
+      closest_distance > ISLAND_POINT_EVERY / 2.0f ||
+      closest.y >= (float)(ISLAND_Y_OFFSET + ISLAND_HEIGHT) - 1) {
     falling = true;
   } else {
     falling = false;
@@ -128,7 +121,7 @@ void Player::update(darena::Game* game, float delta_time) {
   if (!falling && !are_equal(slope, 0.0f)) {
     float y_intercept = closest.y - slope * closest.x;
     float y_point = slope * position.x + y_intercept;
-    position.y = std::round(y_point) - width / 2.0f + 5;
+    position.y = std::round(y_point) - height / 2.0f + 5;
   }
 
   if (!game->my_turn) {

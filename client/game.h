@@ -18,7 +18,6 @@ struct Game {
   int id;
   bool my_turn;
   bool enemy_was_simulating_previous_step = false;
-  bool enemy_still_shooting = false;
   bool check_for_simulation_end = false;
   std::string username;
   std::string server_ip;
@@ -47,7 +46,7 @@ struct Game {
   // Waits for the server to send island data
   bool get_island_data();
 
-  // Shoots the projectile and ends the turn 
+  // Shoots the projectile and ends the turn
   void end_turn();
 
   // Resets the projectile pointer and calls send_turn_data if its my turn

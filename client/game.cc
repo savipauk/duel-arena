@@ -78,7 +78,6 @@ void Game::end_turn() {
 }
 
 void Game::projectile_hit() {
-  darena::log << "PROJECTILE HIT!\n";
   projectile.reset();
 
   if (!my_turn) {
@@ -243,17 +242,9 @@ void Game::update(float delta_time) {
     if (!enemy_is_simulating && enemy_was_simulating_previous_step) {
       my_turn = true;
       set_state(std::make_unique<GSPlayTurn>());
-      // check_for_simulation_end = true;
     }
 
     enemy_was_simulating_previous_step = enemy_is_simulating;
-    enemy_still_shooting = projectile == nullptr;
-
-    // if (check_for_simulation_end && !enemy_still_shooting) {
-    //   my_turn = true;
-    //   set_state(std::make_unique<GSPlayTurn>());
-    //   check_for_simulation_end = true;
-    // }
   }
 
   if (left_island) {

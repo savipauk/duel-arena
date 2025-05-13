@@ -104,15 +104,15 @@ void GSWaitingForIslandData::update(Game* game, float delta_time) {
 
     Position player_pos = left_pos;
     Position enemy_pos = right_pos;
-    std::vector<darena::IslandPoint> player_heightmap =
-        game->left_island->heightmap;
-    std::vector<darena::IslandPoint> enemy_heightmap =
-        game->right_island->heightmap;
+    const std::vector<darena::IslandPoint>* player_heightmap =
+        &game->left_island->heightmap;
+    const std::vector<darena::IslandPoint>* enemy_heightmap =
+        &game->right_island->heightmap;
     if (game->id == 1) {
       player_pos = right_pos;
-      player_heightmap = game->right_island->heightmap;
+      player_heightmap = &game->right_island->heightmap;
       enemy_pos = left_pos;
-      enemy_heightmap = game->left_island->heightmap;
+      enemy_heightmap = &game->left_island->heightmap;
     }
     game->player =
         std::make_unique<darena::Player>(player_pos.x, player_pos.y, 25, 25);

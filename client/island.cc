@@ -27,24 +27,30 @@ void Island::render(Game* game) {
   glBegin(GL_POLYGON);
   // Bottom left point first
   glVertex2i(heightmap[0].position.x, ISLAND_Y_OFFSET + ISLAND_HEIGHT);
-  for (const darena::IslandPoint& point : heightmap) {
-    glVertex2i(point.position.x, point.position.y);
+
+  bool last_was_zero = false;
+  for (size_t i = 0; i < heightmap.size(); ++i) {
+    const darena::IslandPoint& point = heightmap[i];
+    if (!are_equal(point.position.y,
+                   (float)(ISLAND_Y_OFFSET + ISLAND_HEIGHT))) {
+      if (last_was_zero) {
+        glVertex2i(point.position.x, ISLAND_Y_OFFSET + ISLAND_HEIGHT);
+      }
+      glVertex2i(point.position.x, point.position.y);
+      last_was_zero = false;
+      continue;
+    }
+    if (!last_was_zero && i - 1 > 0) {
+      glVertex2i(heightmap[i - 1].position.x, ISLAND_Y_OFFSET + ISLAND_HEIGHT);
+    }
+    glEnd();
+    glBegin(GL_POLYGON);
+    last_was_zero = true;
   }
+
   // Bottom right point last
   glVertex2i(heightmap.back().position.x, ISLAND_Y_OFFSET + ISLAND_HEIGHT);
   glEnd();
-
-  // Draw the right island
-  // glBegin(GL_POLYGON);
-  // // Bottom left point first
-  // glVertex2i(heightmap[0].position.x, ISLAND_Y_OFFSET + ISLAND_HEIGHT);
-  // for (const darena::IslandPoint& point : right_island->heightmap) {
-  //   glVertex2i(point.position.x, point.position.y);
-  // }
-  // // Bottom right point last
-  // glVertex2i(right_island->heightmap.back().position.x,
-  //            ISLAND_Y_OFFSET + ISLAND_HEIGHT);
-  // glEnd();
 }
 
 }  // namespace darena

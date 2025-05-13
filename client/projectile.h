@@ -19,6 +19,8 @@ class Projectile {
   darena::Position position;
   int width = 20;
   int height = 10;
+  const int max_no_hit_frames = 1;
+  uint no_hit_frames_count = 0;
 
  public:
   Projectile(float x, float y, float shot_angle, float shot_power,
@@ -37,6 +39,7 @@ class Projectile {
                 << "velocity_y: " << std::to_string(velocity_y) << "\n";
   }
 
+  void hit(darena::Game* game);
   int island_hit_poll(darena::Game* game,
                       std::vector<darena::IslandPoint>& heightmap,
                       size_t check_index, float nose_x, float nose_y);
