@@ -9,8 +9,8 @@ namespace darena {
 
 void Projectile::hit(darena::Game* game) {
   game->projectile_hit();
-  velocity_x = 0;
   velocity_y = 0;
+  velocity_x = 0;
   no_hit_frames_count = 0;
 }
 
@@ -26,6 +26,7 @@ int Projectile::island_hit_poll(darena::Game* game,
   }
 
   if (nose_y >= point.position.y &&
+      nose_y <= (float)(ISLAND_Y_OFFSET + ISLAND_HEIGHT) &&
       nose_x >= point.position.x - ISLAND_POINT_EVERY / 2.0f &&
       nose_x <= point.position.x + ISLAND_POINT_EVERY / 2.0f) {
     hit(game);
@@ -88,6 +89,7 @@ void Projectile::update(darena::Game* game, float delta_time) {
       nose_y <= check_y + check_h / 2.0f + height / 2.0f) {
     // Hit enemy
     hit(game);
+    game->end_game(!from_a_simulation, Game::GameEndWay::DESTROY);
     return;
   }
 

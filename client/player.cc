@@ -18,7 +18,7 @@ void Player::end_turn_trigger(darena::Game* game) {
 void Player::reset() {
   gas = 100;
   shot_state = ShotState::IDLE;
-  shot_power = 0.0f;
+  // shot_power = 0.0f;
   keys_pressed.clear();
 }
 
@@ -303,14 +303,10 @@ void Player::render(darena::Game* game) {
   glPopMatrix();
 
   // Shot power text
-  std::string message = "";
-  std::string my_pos = "PLAYER POS: " + position.to_string();
-  std::string enemy_pos = "ENEMY POS: " + game->enemy->position.to_string();
-  if (shot_state == ShotState::IDLE) {
-    message = "GAS: " + std::to_string((int)gas);
-  } else {
-    message = "SHOT POWER: " + std::to_string((int)shot_power);
-  }
+  std::string message =
+      "GAS: " + std::to_string((int)gas) +
+      "\nSHOT POWER: " + std::to_string((int)shot_power) +
+      "\nSHOT_ANGLE: " + std::to_string((int)cannon_angle_deg) + "°";
 
   ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
   ImVec2 window_pos = ImVec2(viewport_size.x * 0.1f, viewport_size.y * 0.05f);
@@ -325,8 +321,6 @@ void Player::render(darena::Game* game) {
 
   ImGui::Begin("Player Overlay", nullptr, window_flags);
   ImGui::TextUnformatted(message.c_str());
-  ImGui::TextUnformatted(my_pos.c_str());
-  ImGui::TextUnformatted(enemy_pos.c_str());
   ImGui::End();
 }
 

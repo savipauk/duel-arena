@@ -21,14 +21,16 @@ class Projectile {
   int height = 10;
   const int max_no_hit_frames = 1;
   uint no_hit_frames_count = 0;
+  bool from_a_simulation = false;
 
  public:
   Projectile(float x, float y, float shot_angle, float shot_power,
-             float shot_direction)
+             float shot_direction, float from_a_simulation = false)
       : position(x, y),
         initial_shot_angle(shot_angle),
         velocity(shot_power),
-        shot_direction(shot_direction) {
+        shot_direction(shot_direction),
+        from_a_simulation(from_a_simulation) {
     velocity_x =
         velocity * std::cos(shot_angle) * velocity_multiplier * shot_direction;
     velocity_y = velocity * std::sin(shot_angle) * velocity_multiplier;

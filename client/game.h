@@ -26,6 +26,7 @@ struct Game {
   enum class GameEndWay { FALL, SELF_DESTRUCT, DESTROY };
   const char** game_end_message = &win_by_fall;
   bool game_end = false;
+  bool game_win = false;
 
   int id;
   bool my_turn;

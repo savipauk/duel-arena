@@ -210,7 +210,8 @@ void Enemy::update(darena::Game* game, float delta_time) {
 
         if (!shot) {
           game->projectile = std::make_unique<darena::Projectile>(
-              position.x, position.y, shot_angle, shot_power, shot_direction);
+              position.x, position.y, shot_angle, shot_power, shot_direction,
+              true);
           shot = true;
         }
 

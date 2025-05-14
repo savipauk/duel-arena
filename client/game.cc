@@ -85,6 +85,8 @@ void Game::end_turn() {
 
 void Game::end_game(bool win, GameEndWay how) {
   game_end = true;
+  game_win = win;
+  my_turn = false;
 
   switch (how) {
     case GameEndWay::FALL: {
@@ -303,9 +305,11 @@ void Game::update(float delta_time) {
         check_for_enemy_finished = false;
         end_game(true, GameEndWay::FALL);
       } else if (!enemy->falling) {
-        my_turn = true;
         check_for_enemy_finished = false;
-        set_state(std::make_unique<GSPlayTurn>());
+        if (!game_end) {
+          my_turn = true;
+          set_state(std::make_unique<GSPlayTurn>());
+        }
       }
     }
 
@@ -332,11 +336,11 @@ void Game::render() {
     right_island->render(this);
   }
 
-  if (player) {
+  if (player && (!game_end || game_win)) {
     player->render(this);
   }
 
-  if (enemy) {
+  if (enemy && (!game_end || !game_win)) {
     enemy->render(this);
   }
 
