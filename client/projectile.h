@@ -16,7 +16,7 @@ class Projectile {
   float velocity_x = 0;
   float velocity_y = 0;
   int shot_direction = 1;
-  darena::Position position;
+  darena::Vec2 position;
   int width = 20;
   int height = 10;
   const int max_no_hit_frames = 1;

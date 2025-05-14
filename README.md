@@ -141,3 +141,28 @@ Example:
 
 ## License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Acknowledgement
+This project utilizes the following third-party libraries:
+
+* **ImGui**
+    * Copyright (c) 2014-2024 Omar Cornut
+    * License: MIT
+    * The full license can be found [here](third_party/imgui/LICENSE.txt)
+
+* **SDL2**
+    * License: zlib license
+    * The full license can be found [here](https://github.com/libsdl-org/SDL/blob/SDL2/LICENSE.txt)
+
+* **SDL_net**
+    * License: zlib license
+    * The full license can be found [here](https://github.com/libsdl-org/SDL_net/blob/SDL2/LICENSE.txt)
+
+* **msgpack-cxx**
+    * License: Boost Software License - Version 1.0
+    * The full license can be found [here](https://github.com/msgpack/msgpack-c/blob/master/LICENSE_1_0.txt)
+
+* **earcut.hpp**
+    * Copyright (c) 2015, Mapbox
+    * License: ISC
+    * The full license text can be found [here](https://github.com/mapbox/earcut.hpp/blob/master/LICENSE) 

@@ -82,30 +82,30 @@ class Logger {
 };
 
 // Simple 2D vector with x and y coordinates.
-struct Position {
+struct Vec2 {
   float x;
   float y;
 
-  Position() {}
-  Position(float x, float y) : x(x), y(y) {}
+  Vec2() {}
+  Vec2(float x, float y) : x(x), y(y) {}
 
   std::string to_string() const;
 
   MSGPACK_DEFINE(x, y);
 };
 
-extern Position left_island_starting_position;
-extern Position right_island_starting_position;
+extern Vec2 left_island_starting_position;
+extern Vec2 right_island_starting_position;
 
 // Point on an island with position relative to the island and a height value.
 // Used in the island heightmap.
 // TODO: Add terrain strength attribute randomizer
 struct IslandPoint {
-  Position position;
+  Vec2 position;
   int strength;
 
   IslandPoint() : position(0, 0), strength(1) {}
-  IslandPoint(Position position, int strength)
+  IslandPoint(Vec2 position, int strength)
       : position(position), strength(strength) {}
 
   std::string to_string() const;
@@ -135,7 +135,7 @@ struct ClientTurn {
   std::vector<int> angle_changes;
   float shot_angle;
   float shot_power;
-  darena::Position final_position;
+  darena::Vec2 final_position;
 
   MSGPACK_DEFINE(id, movements, angle_changes, shot_angle, shot_power,
                  final_position);

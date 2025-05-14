@@ -52,7 +52,7 @@ class Enemy {
   int height;
   bool falling = false;
   bool lost = false;
-  darena::Position position;
+  darena::Vec2 position;
   const std::vector<darena::IslandPoint>* heightmap;
   std::atomic_bool is_simulating{false};
 

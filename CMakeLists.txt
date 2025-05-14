@@ -63,6 +63,7 @@ add_library(ClientLib STATIC
   client/island.cc
 ) 
 target_compile_definitions(ClientLib PRIVATE CLIENT) # This defines the CLIENT prefix in the logs
+target_include_directories(ClientLib PRIVATE third_party/mapbox/earcut)
 target_include_directories(ClientLib PUBLIC client)
 target_link_libraries(ClientLib CommonLib SDL2::SDL2 SDL2_net::SDL2_net ImGui msgpack-cxx)
 

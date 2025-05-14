@@ -12,7 +12,7 @@ std::mt19937 gen(rd());
 std::uniform_real_distribution<> dis(0.0, 1.0);
 
 std::vector<darena::IslandPoint> GameMaster::generate_heightmap(
-    const Position& starting_position, int num_of_points) {
+    const Vec2& starting_position, int num_of_points) {
   std::vector<darena::IslandPoint> output = {};
   int random_strength = 1;
   int last_height = 50 + (dis(gen) - 0.5) * 50;
@@ -28,7 +28,7 @@ std::vector<darena::IslandPoint> GameMaster::generate_heightmap(
     }
 
     y = starting_position.y + last_height;
-    Position position{x, y};
+    Vec2 position{x, y};
     output.emplace_back(position, random_strength);
     x += ISLAND_WIDTH / ISLAND_NUM_OF_POINTS;
   }

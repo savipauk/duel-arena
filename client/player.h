@@ -21,7 +21,7 @@ class Player {
  public:
   enum class ShotState { IDLE, CHARGING, SHOOT, DISABLED };
   ShotState shot_state = ShotState::IDLE;
-  darena::Position position;
+  darena::Vec2 position;
   int width;
   int height;
   int cannon_width;

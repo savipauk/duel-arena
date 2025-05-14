@@ -122,7 +122,7 @@ void Enemy::update(darena::Game* game, float delta_time) {
       ISLAND_POINT_EVERY;  // If >= ISLAND_POINT_EVERY / 2 then the player is
                            // off the island
   for (auto it = heightmap->begin(); it != heightmap->end(); it++) {
-    Position point = it->position;
+    Vec2 point = it->position;
     float distance = point.x - position.x;
     if (std::fabs(distance) < std::fabs(closest_distance)) {
       closest_it = it;
@@ -130,8 +130,8 @@ void Enemy::update(darena::Game* game, float delta_time) {
     }
   }
 
-  Position closest = closest_it->position;
-  Position snd_closest = closest;
+  Vec2 closest = closest_it->position;
+  Vec2 snd_closest = closest;
   if (closest_distance < 0 && closest_it != heightmap->begin()) {
     snd_closest = (*(--closest_it)).position;
   } else if (closest_distance > 0 &&
@@ -242,10 +242,10 @@ void Enemy::update(darena::Game* game, float delta_time) {
 void Enemy::render(darena::Game* game) {
   // Enemy
   int angle_deg = angle_rad * (180.0f / M_PI);
-  Position top_left = {-width / 2.0f, height / 2.0f};
-  Position top_right = {width / 2.0f, height / 2.0f};
-  Position bot_right = {width / 2.0f, -height / 2.0f};
-  Position bot_left = {-width / 2.0f, -height / 2.0f};
+  Vec2 top_left = {-width / 2.0f, height / 2.0f};
+  Vec2 top_right = {width / 2.0f, height / 2.0f};
+  Vec2 bot_right = {width / 2.0f, -height / 2.0f};
+  Vec2 bot_left = {-width / 2.0f, -height / 2.0f};
 
   glPushMatrix();
   glTranslatef(position.x, position.y, 0);

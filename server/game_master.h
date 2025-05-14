@@ -8,7 +8,7 @@ namespace darena {
 
 struct GameMaster {
   std::vector<darena::IslandPoint> generate_heightmap(
-      const Position& starting_position, int num_of_points);
+      const Vec2& starting_position, int num_of_points);
 };
 
 }  // namespace darena

@@ -28,9 +28,9 @@ int main() {
   darena::log << "Generating heightmaps\n";
 
   // Generate heightmaps
-  darena::Position left_island_starting_position{ISLAND_X_OFFSET,
+  darena::Vec2 left_island_starting_position{ISLAND_X_OFFSET,
                                                  ISLAND_Y_OFFSET};
-  darena::Position right_island_starting_position{
+  darena::Vec2 right_island_starting_position{
       WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
 
   std::vector<darena::IslandPoint> left_island_heightmap =

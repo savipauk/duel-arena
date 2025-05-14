@@ -32,18 +32,19 @@ int Projectile::island_hit_poll(darena::Game* game,
     hit(game);
     // TODO: Update to make use of strength
 
-    int crater_radius = 5;
-    float center_impact_modifier = 15.0f;
+    int crater_radius = 4;
+    float center_impact_modifier = 20.0f;
+    float impact_position_value = point.position.y;
 
     for (int i = -crater_radius; i <= crater_radius; ++i) {
       int neighbour_i = (int)(check_index + i);
 
       if (neighbour_i >= 0 && (size_t)neighbour_i < heightmap.size()) {
+        float old_value = heightmap[neighbour_i].position.y;
         float distance_factor =
             1.0f - (std::abs((float)i) / (crater_radius + 1.0f));
         float neighbor_modifier = center_impact_modifier * distance_factor;
-        float new_value = heightmap[neighbour_i].position.y +
-                          std::max(1.0f, neighbor_modifier);
+        float new_value = old_value + std::max(1.0f, neighbor_modifier);
         heightmap[neighbour_i].position.y =
             std::min((float)(ISLAND_Y_OFFSET + ISLAND_HEIGHT), new_value);
       }
@@ -97,6 +98,7 @@ void Projectile::update(darena::Game* game, float delta_time) {
     auto& left_heightmap = game->left_island->heightmap;
     for (size_t i = 0; i < left_heightmap.size(); ++i) {
       if (island_hit_poll(game, left_heightmap, i, nose_x, nose_y)) {
+        game->left_island->rebuild_island_mesh();
         return;
       }
     }
@@ -106,6 +108,7 @@ void Projectile::update(darena::Game* game, float delta_time) {
     auto& right_heightmap = game->right_island->heightmap;
     for (size_t i = 0; i < right_heightmap.size(); ++i) {
       if (island_hit_poll(game, right_heightmap, i, nose_x, nose_y)) {
+        game->right_island->rebuild_island_mesh();
         return;
       }
     }
@@ -119,10 +122,10 @@ void Projectile::update(darena::Game* game, float delta_time) {
 }
 
 void Projectile::render(darena::Game* game) {
-  Position top_left = {-width / 2.0f, height / 2.0f};
-  Position top_right = {width / 2.0f, height / 2.0f};
-  Position bot_right = {width / 2.0f, -height / 2.0f};
-  Position bot_left = {-width / 2.0f, -height / 2.0f};
+  Vec2 top_left = {-width / 2.0f, height / 2.0f};
+  Vec2 top_right = {width / 2.0f, height / 2.0f};
+  Vec2 bot_right = {width / 2.0f, -height / 2.0f};
+  Vec2 bot_left = {-width / 2.0f, -height / 2.0f};
   int angle_deg = angle * (180.0f / M_PI);
 
   glPushMatrix();

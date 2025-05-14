@@ -6,7 +6,7 @@
 
 namespace darena {
 
-std::string Position::to_string() const {
+std::string Vec2::to_string() const {
   return "Position(" + std::to_string(x) + ", " + std::to_string(y) + ")";
 }
 
@@ -44,8 +44,8 @@ bool are_equal(float x1, float x2, float epsilon) {
 
 Logger log;
 
-Position left_island_starting_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
-Position right_island_starting_position{
+Vec2 left_island_starting_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
+Vec2 right_island_starting_position{
     WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
 
 }  // namespace darena

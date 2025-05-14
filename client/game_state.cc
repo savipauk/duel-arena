@@ -11,8 +11,8 @@
 
 namespace darena {
 
-Position left_pos = {100, 100};
-Position right_pos = {WINDOW_WIDTH - 100 - 25,  // - 25 because  of player width
+Vec2 left_pos = {100, 100};
+Vec2 right_pos = {WINDOW_WIDTH - 100 - 25,  // - 25 because  of player width
                       100};
 
 void GSInitial::process_input(Game* game, SDL_Event* e) { return; }
@@ -102,8 +102,8 @@ void GSWaitingForIslandData::update(Game* game, float delta_time) {
   if (transition_ready) {
     transition_ready = false;
 
-    Position player_pos = left_pos;
-    Position enemy_pos = right_pos;
+    Vec2 player_pos = left_pos;
+    Vec2 enemy_pos = right_pos;
     const std::vector<darena::IslandPoint>* player_heightmap =
         &game->left_island->heightmap;
     const std::vector<darena::IslandPoint>* enemy_heightmap =

@@ -86,7 +86,7 @@ struct Game {
   void render();
 
   // Placeholder function to test functionality
-  std::vector<darena::IslandPoint> generate(const Position& position,
+  std::vector<darena::IslandPoint> generate(const Vec2& position,
                                             int num_of_points);
 };
 
