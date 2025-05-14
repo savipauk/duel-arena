@@ -70,11 +70,64 @@ void Game::end_turn() {
     shot_direction = -1;
   }
 
+  if (are_equal(turn_data->shot_power, -1)) {
+    end_game(false, GameEndWay::FALL);
+    projectile_hit();
+    return;
+  }
+
   projectile = std::make_unique<darena::Projectile>(
       player->position.x, player->position.y, turn_data->shot_angle,
       turn_data->shot_power, shot_direction);
 
   set_state(std::make_unique<GSShootProjectile>());
+}
+
+void Game::end_game(bool win, GameEndWay how) {
+  game_end = true;
+
+  switch (how) {
+    case GameEndWay::FALL: {
+      if (win) {
+        game_end_message = &win_by_fall;
+      } else {
+        game_end_message = &lose_by_fall;
+      }
+      break;
+    }
+    case GameEndWay::SELF_DESTRUCT: {
+      if (win) {
+        game_end_message = &win_by_self_destruct;
+      } else {
+        game_end_message = &lose_by_self_destruct;
+      }
+      break;
+    }
+    case GameEndWay::DESTROY: {
+      if (win) {
+        game_end_message = &win_by_destroy;
+      } else {
+        game_end_message = &lose_by_destroy;
+      }
+      break;
+    }
+    default: {
+      if (win) {
+        game_end_message = &win_by_unknown;
+      } else {
+        game_end_message = &lose_by_unknown;
+      }
+      break;
+    }
+  }
+
+  if (win) {
+    set_state(std::make_unique<GSWonGame>());
+  } else {
+    set_state(std::make_unique<GSLoseGame>());
+  }
+
+  darena::log << *game_end_message << "\n";
 }
 
 void Game::projectile_hit() {
@@ -110,9 +163,10 @@ void Game::send_turn_data() {
 
   my_turn = false;
 
-  darena::log << "Player " << id << " going from Play to Wait\n";
-
-  set_state(std::make_unique<GSWaitTurn>());
+  // TODO: Use a dynamic_cast here and some other places as well
+  if (!game_end) {
+    set_state(std::make_unique<GSWaitTurn>());
+  }
 }
 
 bool Game::simulate_turn() {
@@ -240,8 +294,19 @@ void Game::update(float delta_time) {
 
     bool enemy_is_simulating = enemy->is_simulating.load();
     if (!enemy_is_simulating && enemy_was_simulating_previous_step) {
-      my_turn = true;
-      set_state(std::make_unique<GSPlayTurn>());
+      check_for_enemy_finished = true;
+    }
+
+    if (check_for_enemy_finished) {
+      if (enemy->falling && enemy->lost) {
+        darena::log << "I won by enemy falling!\n";
+        check_for_enemy_finished = false;
+        end_game(true, GameEndWay::FALL);
+      } else if (!enemy->falling) {
+        my_turn = true;
+        check_for_enemy_finished = false;
+        set_state(std::make_unique<GSPlayTurn>());
+      }
     }
 
     enemy_was_simulating_previous_step = enemy_is_simulating;

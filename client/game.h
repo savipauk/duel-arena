@@ -15,10 +15,22 @@ namespace darena {
 class GameState;
 
 struct Game {
+  const char* win_by_fall = "I win. The enemy has fallen into the void.";
+  const char* lose_by_fall = "I lose. I fell into the void.";
+  const char* win_by_self_destruct = "I win. The enemy has self destructed.";
+  const char* lose_by_self_destruct = "I lose. I self destructed.";
+  const char* win_by_destroy = "I win. I destroyed the enemy.";
+  const char* lose_by_destroy = "I lose. I got destroyed.";
+  const char* win_by_unknown = "I win. I don't know why.";
+  const char* lose_by_unknown = "I lose. I don't know why.";
+  enum class GameEndWay { FALL, SELF_DESTRUCT, DESTROY };
+  const char** game_end_message = &win_by_fall;
+  bool game_end = false;
+
   int id;
   bool my_turn;
   bool enemy_was_simulating_previous_step = false;
-  bool check_for_simulation_end = false;
+  bool check_for_enemy_finished = false;
   std::string username;
   std::string server_ip;
   darena::TCPClient client;
@@ -48,6 +60,9 @@ struct Game {
 
   // Shoots the projectile and ends the turn
   void end_turn();
+
+  // Ends the gameturn
+  void end_game(bool win, GameEndWay how);
 
   // Resets the projectile pointer and calls send_turn_data if its my turn
   void projectile_hit();

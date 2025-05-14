@@ -57,6 +57,7 @@ class Player {
   void update(darena::Game* game, float delta_time);
   void render(darena::Game* game);
 
+  void end_turn_trigger(darena::Game* game);
   void reset();
 };
 

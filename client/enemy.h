@@ -32,7 +32,6 @@ class Enemy {
   float max_shot_angle = M_PI / 2.0f;
 
   float shot_power = 0.0f;
-  bool falling = false;
 
   void simulation_thread();
   size_t movement_index = 0;
@@ -51,6 +50,8 @@ class Enemy {
  public:
   int width;
   int height;
+  bool falling = false;
+  bool lost = false;
   darena::Position position;
   const std::vector<darena::IslandPoint>* heightmap;
   std::atomic_bool is_simulating{false};

@@ -93,4 +93,18 @@ class GSSimulateTurn : public GameState {
   void render(darena::Game* game) override;
 };
 
+class GSWonGame : public GameState {
+ public:
+  void process_input(darena::Game* game, SDL_Event* e) override;
+  void update(darena::Game* game, float delta_time) override;
+  void render(darena::Game* game) override;
+};
+
+class GSLoseGame : public GameState {
+ public:
+  void process_input(darena::Game* game, SDL_Event* e) override;
+  void update(darena::Game* game, float delta_time) override;
+  void render(darena::Game* game) override;
+};
+
 }  // namespace darena

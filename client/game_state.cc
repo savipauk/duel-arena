@@ -228,7 +228,6 @@ void GSWaitTurn::job(Game* game) {
 void GSWaitTurn::update(Game* game, float delta_time) {
   if (transition_ready) {
     transition_ready = false;
-    darena::log << "Player " << game->id << " going from Wait to Play\n";
     game->set_state(std::make_unique<GSSimulateTurn>());
     return;
   }
@@ -272,6 +271,56 @@ void GSSimulateTurn::update(Game* game, float delta_time) {
 
 void GSSimulateTurn::render(Game* game) {
   const char* message = "SIMULATING TURN";
+
+  ImVec2 text_size = ImGui::CalcTextSize(message);
+  ImVec2 padding = ImVec2(20.0f, 20.0f);
+
+  ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
+  ImVec2 window_pos = ImVec2(viewport_size.x * 0.5f, viewport_size.y * 0.25f);
+  ImVec2 window_size = ImVec2(text_size.x + padding.x, text_size.y + padding.y);
+
+  ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowSize(window_size);
+
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse |
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+
+  ImGui::Begin("Turn Overlay", nullptr, window_flags);
+  ImGui::TextUnformatted(message);
+  ImGui::End();
+}
+
+void GSWonGame::process_input(darena::Game* game, SDL_Event* e) {}
+void GSWonGame::update(darena::Game* game, float delta_time) {}
+void GSWonGame::render(darena::Game* game) {
+  const char* message = *game->game_end_message;
+
+  ImVec2 text_size = ImGui::CalcTextSize(message);
+  ImVec2 padding = ImVec2(20.0f, 20.0f);
+
+  ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
+  ImVec2 window_pos = ImVec2(viewport_size.x * 0.5f, viewport_size.y * 0.25f);
+  ImVec2 window_size = ImVec2(text_size.x + padding.x, text_size.y + padding.y);
+
+  ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowSize(window_size);
+
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse |
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+
+  ImGui::Begin("Turn Overlay", nullptr, window_flags);
+  ImGui::TextUnformatted(message);
+  ImGui::End();
+}
+
+void GSLoseGame::process_input(darena::Game* game, SDL_Event* e) {}
+void GSLoseGame::update(darena::Game* game, float delta_time) {}
+void GSLoseGame::render(darena::Game* game) {
+  const char* message = *game->game_end_message;
 
   ImVec2 text_size = ImGui::CalcTextSize(message);
   ImVec2 padding = ImVec2(20.0f, 20.0f);

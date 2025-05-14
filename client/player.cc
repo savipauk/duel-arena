@@ -7,6 +7,14 @@
 
 namespace darena {
 
+void Player::end_turn_trigger(darena::Game* game) {
+  game->turn_data->shot_angle = shot_angle;
+  game->turn_data->shot_power = shot_power;
+  game->turn_data->final_position = position;
+  game->end_turn();
+  shot_state = ShotState::DISABLED;
+}
+
 void Player::reset() {
   gas = 100;
   shot_state = ShotState::IDLE;
@@ -74,6 +82,11 @@ void Player::update(darena::Game* game, float delta_time) {
       current_y_speed = max_y_speed;
     }
     position.y += current_y_speed;
+    if (position.y >= WINDOW_HEIGHT && game->my_turn) {
+      shot_angle = 0;
+      shot_power = -1;
+      end_turn_trigger(game);
+    }
   } else {
     current_y_speed = 0;
   }
@@ -169,11 +182,7 @@ void Player::update(darena::Game* game, float delta_time) {
       break;
     }
     case ShotState::SHOOT: {
-      game->turn_data->shot_angle = shot_angle;
-      game->turn_data->shot_power = shot_power;
-      game->turn_data->final_position = position;
-      game->end_turn();
-      shot_state = ShotState::DISABLED;
+      end_turn_trigger(game);
       break;
     }
     case ShotState::DISABLED: {
@@ -273,7 +282,11 @@ void Player::render(darena::Game* game) {
   if (shot_state == ShotState::IDLE) {
     percentage_filled = gas / 100.0;
   } else {
-    percentage_filled = shot_power / 100.0;
+    float bar_shot_power = shot_power;
+    if (are_equal(shot_power, -1)) {
+      bar_shot_power = 0;
+    }
+    percentage_filled = bar_shot_power / 100.0;
   }
   float diff = top_right.x - top_left.x;
   top_right.x -= diff * (1 - percentage_filled);

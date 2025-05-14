@@ -108,6 +108,11 @@ void Enemy::update(darena::Game* game, float delta_time) {
       current_y_speed = max_y_speed;
     }
     position.y += current_y_speed;
+    if (position.y >= WINDOW_HEIGHT && !game->my_turn) {
+      shot_angle = 0;
+      shot_power = -1;
+      lost = true;
+    }
   } else {
     current_y_speed = 0;
   }
@@ -320,7 +325,11 @@ void Enemy::render(darena::Game* game) {
 
   glEnd();
 
-  float percentage_filled = shot_power / 100.0;
+  float bar_shot_power = shot_power;
+  if (are_equal(shot_power, -1)) {
+    bar_shot_power = 0;
+  }
+  float percentage_filled = bar_shot_power / 100.0;
   float diff = top_right.x - top_left.x;
   top_right.x -= diff * (1 - percentage_filled);
   bot_right.x -= diff * (1 - percentage_filled);
