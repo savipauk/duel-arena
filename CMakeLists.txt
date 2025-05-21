@@ -6,7 +6,7 @@ project(DuelArena)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Generates compile_commands.json in out/ 
+# Generates compile_commands.json in build/ 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Find SDL2
