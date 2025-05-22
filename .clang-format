@@ -3,5 +3,5 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 ColumnLimit: 80
 IndentWidth: 2
-AllowShortFunctionsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
 
