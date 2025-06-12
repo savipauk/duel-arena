@@ -165,7 +165,7 @@ bool TCPServer::get_turn_data(int id) {
   if (!len) {
     darena::log << "SDLNet_TCP_Recv Error, len=" << len
                 << "\nError: " << SDLNet_GetError() << "\n ";
-    return {};
+    return false;
   }
   message_size = ntohl(message_size);
   darena::log << "next message size: " << message_size << "\n";
