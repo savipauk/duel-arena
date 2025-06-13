@@ -24,15 +24,12 @@ struct Engine {
         last_frame_time(SDL_GetTicks64()),
         fps(0) {}
 
-  // Initializes the SDL window and renderer
-  bool initialize();
-
-  // Setup the imgui context
-  // void setup_imgui_context();
-
   // Does game preprocessing (TCP server connection) and then runs the game loop
   // of process_input(), update() and render()
   bool run();
+
+  // Initializes the SDL window and renderer
+  bool initialize();
 
   // Processes the user input
   void process_input();
@@ -45,12 +42,6 @@ struct Engine {
 
   // Cleanup function that destroys the window and renderer
   void cleanup();
-
-  // Connect to server
-  void job_connect_to_server();
-
-  // Get island data
-  void job_get_island_data();
 };
 
 }  // namespace darena

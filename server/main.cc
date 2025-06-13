@@ -28,8 +28,7 @@ int main() {
   darena::log << "Generating heightmaps\n";
 
   // Generate heightmaps
-  darena::Vec2 left_island_starting_position{ISLAND_X_OFFSET,
-                                                 ISLAND_Y_OFFSET};
+  darena::Vec2 left_island_starting_position{ISLAND_X_OFFSET, ISLAND_Y_OFFSET};
   darena::Vec2 right_island_starting_position{
       WINDOW_WIDTH - ISLAND_X_OFFSET - ISLAND_WIDTH, ISLAND_Y_OFFSET};
 
@@ -92,12 +91,6 @@ int main() {
     id_playing = id_waiting;
     id_waiting = 1 - id_playing;
   }
-  // for (int i = 0; i < client_id; i++) {
-  //   noerr = server.get_turn_data(i);
-  //   if (!noerr) {
-  //     return 1;
-  //   }
-  // }
 
   server.cleanup();
   darena::log << "Server ended.\n";
