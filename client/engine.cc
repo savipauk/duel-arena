@@ -67,7 +67,6 @@ void Engine::process_input() {
   while (SDL_PollEvent(&e)) {
     ImGui_ImplSDL2_ProcessEvent(&e);
     game->process_input(&e);
-    // Player* player = &game->player;
     switch (e.type) {
       case SDL_QUIT:
         game_running = false;
@@ -80,12 +79,9 @@ void Engine::update() {
   // Calculate delta time
   float delta_time = (SDL_GetTicks64() - last_frame_time) / 1000.0;
   last_frame_time = SDL_GetTicks64();
-  // darena::log << "delta_time: " << delta_time << "\tfps: " << 1.f /
-  // delta_time << "\n";
 
   // Rest of the update function
   game->update(delta_time);
-  // darena::log << "Connection: " << std::to_string(game->connection) << "\n";
 }
 
 bool Engine::render() {
@@ -130,9 +126,6 @@ bool Engine::run() {
   }
 
   game_running = true;
-
-  bool show_demo_window = true;
-
   game->username = "Player";
   game->server_ip = "127.0.0.1";
 

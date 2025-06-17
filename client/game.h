@@ -62,7 +62,7 @@ struct Game {
   // Shoots the projectile and ends the turn
   void end_turn();
 
-  // Ends the gameturn
+  // Ends the game
   void end_game(bool win, GameEndWay how);
 
   // Resets the projectile pointer and calls send_turn_data if its my turn

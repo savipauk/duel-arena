@@ -383,6 +383,4 @@ std::vector<darena::IslandPoint> Game::generate(
   return output;
 }
 
-void update(Game* game, float delta_time) {}
-
 }  // namespace darena
