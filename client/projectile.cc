@@ -34,7 +34,6 @@ int Projectile::island_hit_poll(darena::Game* game,
 
     int crater_radius = 4;
     float center_impact_modifier = 20.0f;
-    float impact_position_value = point.position.y;
 
     for (int i = -crater_radius; i <= crater_radius; ++i) {
       int neighbour_i = (int)(check_index + i);
